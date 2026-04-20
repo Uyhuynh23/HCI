@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { AddScheduleModal } from '../components/AddScheduleModal';
 
 const DraggableBooking = ({ children, color, widthClass, initialLeftPercent }) => {
   const [offsetX, setOffsetX] = useState(0);
@@ -7,8 +8,7 @@ const DraggableBooking = ({ children, color, widthClass, initialLeftPercent }) =
   const currentX = useRef(0);
 
   const handlePointerDown = (e) => {
-    e.stopPropagation(); // Stop propagation to avoid any parent drag
-    // Prevent default on the event to stop text selection inside
+    e.stopPropagation(); 
     setIsDragging(true);
     startX.current = e.clientX;
     currentX.current = offsetX;
@@ -41,10 +41,9 @@ const DraggableBooking = ({ children, color, widthClass, initialLeftPercent }) =
         transform: `translateX(${offsetX}px)`,
         zIndex: isDragging ? 50 : 10,
         boxShadow: isDragging ? "0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)" : undefined,
-        touchAction: 'none' // Prevent scrolling when dragging on touch devices
+        touchAction: 'none' 
       }}
     >
-      {/* Prevent pointer events on children so drag isn't interrupted */}
       <div className="pointer-events-none flex flex-col">
         {children}
       </div>
@@ -53,6 +52,8 @@ const DraggableBooking = ({ children, color, widthClass, initialLeftPercent }) =
 };
 
 export function SchedulePage() {
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
   return (
     <div className="flex-1 flex flex-col bg-[#F8F9FA] overflow-y-auto">
       {/* TopNavBar */}
@@ -61,9 +62,10 @@ export function SchedulePage() {
           <h2 className="text-[32px] font-bold text-[#191C1D] uppercase tracking-tight">LỊCH TRÌNH TỰ ĐỘNG</h2>
         </div>
         <div className="flex items-center gap-6">
-          <button className="bg-[#1a73e8] hover:bg-blue-700 text-white px-8 py-3.5 rounded-xl text-[18px] font-bold flex items-center gap-3 shadow-md active:scale-95 transition-all">
+          <button onClick={() => setIsAddModalOpen(true)} className="bg-[#1a73e8] hover:bg-blue-700 text-white px-8 py-3.5 rounded-xl text-[18px] font-bold flex items-center gap-3 shadow-md active:scale-95 transition-all">
             <span className="material-symbols-outlined text-[24px]">add</span> THÊM LỊCH MỚI
           </button>
+
           <div className="flex gap-4">
             <button className="p-3 bg-[#e1e3e4] hover:bg-[#d9dadb] rounded-full text-[#191C1D] transition-colors flex items-center justify-center">
               <span className="material-symbols-outlined text-[24px]">notifications</span>
@@ -203,6 +205,8 @@ export function SchedulePage() {
           </div>
         </div>
       </footer>
+
+      <AddScheduleModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
     </div>
   );
 }

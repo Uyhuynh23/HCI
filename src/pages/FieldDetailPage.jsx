@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AddScheduleModal } from '../components/AddScheduleModal';
 
 export function FieldDetailPage() {
   const navigate = useNavigate();
+  const [isTurnOffModalOpen, setIsTurnOffModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   return (
     <div className="flex-1 flex flex-col bg-[#f8f9fa] overflow-y-auto relative antialiased">
@@ -67,7 +70,7 @@ export function FieldDetailPage() {
 
           {/* Swipe Slider / Turn Off All */}
           <div className="mt-8 flex justify-center">
-            <button className="w-fit px-10 bg-[#ba1a1a] rounded-2xl flex items-center justify-center gap-4 active:scale-[0.98] transition-transform shadow-xl text-white h-16 border-none">
+            <button onClick={() => setIsTurnOffModalOpen(true)} className="w-fit px-10 bg-[#ba1a1a] rounded-2xl flex items-center justify-center gap-4 active:scale-[0.98] transition-transform shadow-xl text-white h-16 border-none">
                <div className="flex items-center gap-6">
                  <span className="material-symbols-outlined text-[24px]" style={{ fontWeight: 300 }}>power_settings_new</span>
                  <span className="font-bold uppercase tracking-tight text-[20px]">TẮT TOÀN BỘ ĐÈN</span>
@@ -112,7 +115,7 @@ export function FieldDetailPage() {
             </div>
           </div>
           
-          <button className="mt-8 bg-[#1a73e8] text-white h-20 rounded-2xl font-bold text-[20px] flex items-center justify-center gap-3 shadow-[0_12px_24px_rgba(26,115,232,0.3)] active:scale-95 transition-all w-full border-none">
+          <button onClick={() => setIsAddModalOpen(true)} className="mt-8 bg-[#1a73e8] text-white h-20 rounded-2xl font-bold text-[20px] flex items-center justify-center gap-3 shadow-[0_12px_24px_rgba(26,115,232,0.3)] active:scale-95 transition-all w-full border-none">
             <span className="material-symbols-outlined text-[28px]">add_circle</span>ĐẶT SÂN
           </button>
         </section>
@@ -125,6 +128,33 @@ export function FieldDetailPage() {
             <span className="absolute right-24 bg-[#212529] text-white px-4 py-2 rounded-xl text-[16px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Hỗ trợ khẩn cấp</span>
          </button>
       </div>
+
+      {/* Tắt Toàn Bộ Đèn Modal */}
+      {isTurnOffModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4">
+          <div className="bg-white rounded-[2.5rem] p-10 max-w-[400px] w-full flex flex-col items-center text-center shadow-2xl relative animate-in fade-in zoom-in duration-200">
+            <div className="w-24 h-24 bg-[#ffdad6] rounded-full flex items-center justify-center mb-6">
+              <span className="material-symbols-outlined text-[64px] text-[#ba1a1a]" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
+            </div>
+            <h2 className="text-[28px] font-black text-[#101828] leading-[1.2] uppercase mb-4 tracking-tight">XÁC NHẬN TẮT<br/>TOÀN BỘ ĐÈN?</h2>
+            <p className="text-[16px] text-slate-500 mb-8 leading-normal font-medium">
+              Bạn có chắc chắn muốn tắt toàn bộ hệ thống đèn tại Khu vực 1 không? Hành động này sẽ dừng tất cả các trận đấu đang diễn ra.
+            </p>
+            <div className="flex flex-col gap-3 w-full">
+              <button onClick={() => setIsTurnOffModalOpen(false)} className="w-full bg-[#f1f4f9] hover:bg-[#e2e8f0] text-[#101828] font-bold py-4 rounded-2xl text-[18px] transition-colors border-none">
+                Không, Quay lại
+              </button>
+              <button onClick={() => setIsTurnOffModalOpen(false)} className="w-full bg-[#ba1a1a] hover:bg-[#93000a] text-white font-bold py-4 rounded-2xl text-[18px] transition-colors shadow-md border-none">
+                Đồng Ý Tắt
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Thêm Lịch Mới Modal */}
+      <AddScheduleModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
+
     </div>
   );
 }

@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export function EquipmentPage() {
+  const [isDisconnectModalOpen, setIsDisconnectModalOpen] = useState(false);
+
   return (
     <div className="flex-1 flex flex-col h-full bg-[#f8f9fc] overflow-hidden">
       {/* HEADER */}
@@ -82,7 +84,7 @@ export function EquipmentPage() {
                   </div>
                 </div>
               </div>
-              <button className="border-2 border-[#e0e3e8] text-[#181c20] font-bold text-[16px] px-8 py-2.5 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors">
+              <button onClick={() => setIsDisconnectModalOpen(true)} className="border-2 border-[#e0e3e8] text-[#181c20] font-bold text-[16px] px-8 py-2.5 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors">
                 Ngắt
               </button>
             </div>
@@ -101,7 +103,7 @@ export function EquipmentPage() {
                   </div>
                 </div>
               </div>
-              <button className="border-2 border-[#e0e3e8] text-[#181c20] font-bold text-[16px] px-8 py-2.5 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors">
+              <button onClick={() => setIsDisconnectModalOpen(true)} className="border-2 border-[#e0e3e8] text-[#181c20] font-bold text-[16px] px-8 py-2.5 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors">
                 Ngắt
               </button>
             </div>
@@ -120,7 +122,7 @@ export function EquipmentPage() {
                   </div>
                 </div>
               </div>
-              <button className="border-2 border-[#e0e3e8] text-[#181c20] font-bold text-[16px] px-8 py-2.5 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors">
+              <button onClick={() => setIsDisconnectModalOpen(true)} className="border-2 border-[#e0e3e8] text-[#181c20] font-bold text-[16px] px-8 py-2.5 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors">
                 Ngắt
               </button>
             </div>
@@ -160,6 +162,32 @@ export function EquipmentPage() {
           </div>
         </div>
       </div>
+
+      {/* Disconnect Modal */}
+      {isDisconnectModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4">
+          <div className="bg-white rounded-[2rem] p-10 max-w-[400px] w-full flex flex-col items-center text-center shadow-2xl relative animate-in fade-in zoom-in duration-200 border-b-[8px] border-[#1a73e8] overflow-hidden">
+            <div className="w-24 h-24 bg-[#ffeed2] rounded-full flex items-center justify-center mb-6">
+              <span className="material-symbols-outlined text-[64px] text-[#c75b00]" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
+            </div>
+            <h2 className="text-[28px] font-black text-[#101828] leading-[1.2] uppercase mb-4 tracking-tight">XÁC NHẬN<br/>NGẮT KẾT NỐI</h2>
+            <p className="text-[18px] text-[#414754] mb-8 leading-normal font-medium">
+              Sân 1 hiện tại đang chiếu<br/>
+              <span className="text-[#1a73e8] font-bold text-[20px]">[Bóng chuyền]</span>.<br/><br/>
+              Bạn có chắc chắn muốn<br/>ngắt kết nối không?
+            </p>
+            <div className="flex gap-4 w-full">
+              <button onClick={() => setIsDisconnectModalOpen(false)} className="flex-1 bg-[#e0e3e8] hover:bg-[#d1d5db] text-[#101828] font-bold py-4 rounded-2xl text-[18px] transition-colors border-none">
+                Không
+              </button>
+              <button onClick={() => setIsDisconnectModalOpen(false)} className="flex-1 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-bold py-4 rounded-2xl text-[18px] transition-colors shadow-md border-none">
+                Đồng Ý
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

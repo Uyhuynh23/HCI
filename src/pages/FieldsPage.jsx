@@ -1,8 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AddScheduleModal } from '../components/AddScheduleModal';
+import { DateSelectionModal } from '../components/DateSelectionModal';
+import { TimeRangeSelectionModal } from '../components/TimeRangeSelectionModal';
+import { format } from 'date-fns';
 
 export function FieldsPage() {
   const navigate = useNavigate();
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+  const [selectedFilterDate, setSelectedFilterDate] = useState(new Date());
+
+  const [isTimeRangeModalOpen, setIsTimeRangeModalOpen] = useState(false);
+  const [timeRange, setTimeRange] = useState({ startTime: '08:00', endTime: '10:00' });
+
+  // e.g. "Hôm nay, 24 Tháng 5" or "Thứ Sáu, 06 Tháng 10"
+  const dayNames = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+  const isToday = new Date().toDateString() === selectedFilterDate.toDateString();
+  const dateDisplayString = isToday 
+    ? `Hôm nay, ${format(selectedFilterDate, 'dd')} Tháng ${format(selectedFilterDate, 'MM')}`
+    : `${dayNames[selectedFilterDate.getDay()]}, ${format(selectedFilterDate, 'dd')} Tháng ${format(selectedFilterDate, 'MM')}`;
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -13,7 +30,7 @@ export function FieldsPage() {
           <button className="w-12 h-12 flex items-center justify-center text-slate-600 hover:opacity-80 active:translate-y-0.5 duration-200">
             <span className="material-symbols-outlined text-[28px]">notifications</span>
           </button>
-          <button className="bg-primary text-on-primary action-style px-8 py-3 rounded-xl editorial-shadow active:translate-y-0.5 duration-200 flex items-center gap-2">
+          <button onClick={() => setIsAddModalOpen(true)} className="bg-primary text-on-primary action-style px-8 py-3 rounded-xl editorial-shadow active:translate-y-0.5 duration-200 flex items-center gap-2">
             <span className="material-symbols-outlined text-[24px]">add</span>
             Đặt sân
           </button>
@@ -27,15 +44,15 @@ export function FieldsPage() {
           <div className="flex flex-wrap items-end gap-6">
             <div className="flex flex-col gap-2 min-w-[200px]">
               <span className="body-medium-style text-on-surface">Ngày đặt sân</span>
-              <div className="bg-surface-container-lowest p-4 rounded-xl flex items-center justify-between border border-outline-variant/20 cursor-pointer">
-                <span className="body-style">Hôm nay, 24 Tháng 5</span>
+              <div onClick={() => setIsDateModalOpen(true)} className="bg-surface-container-lowest p-4 rounded-xl flex items-center justify-between border border-outline-variant/20 cursor-pointer active:scale-95 transition-transform">
+                <span className="body-style">{dateDisplayString}</span>
                 <span className="material-symbols-outlined text-primary text-[24px]">calendar_today</span>
               </div>
             </div>
             <div className="flex flex-col gap-2 min-w-[160px]">
               <span className="body-medium-style text-on-surface">Khung giờ</span>
-              <div className="bg-surface-container-lowest p-4 rounded-xl flex items-center justify-between border border-outline-variant/20 cursor-pointer">
-                <span className="body-style">08:00 - 10:00</span>
+              <div onClick={() => setIsTimeRangeModalOpen(true)} className="bg-surface-container-lowest p-4 rounded-xl flex items-center justify-between border border-outline-variant/20 cursor-pointer active:scale-95 transition-transform">
+                <span className="body-style">{timeRange.startTime} - {timeRange.endTime}</span>
                 <span className="material-symbols-outlined text-primary text-[24px]">schedule</span>
               </div>
             </div>
@@ -183,6 +200,23 @@ export function FieldsPage() {
           <span className="material-symbols-outlined text-[40px]" style={{ fontVariationSettings: "'FILL' 1" }}>help</span>
         </button>
       </div>
+
+      <AddScheduleModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
+      
+      <DateSelectionModal 
+        isOpen={isDateModalOpen} 
+        onClose={() => setIsDateModalOpen(false)} 
+        initialDate={selectedFilterDate} 
+        onConfirm={(d) => setSelectedFilterDate(d)} 
+      />
+
+      <TimeRangeSelectionModal 
+        isOpen={isTimeRangeModalOpen}
+        onClose={() => setIsTimeRangeModalOpen(false)}
+        initialStartTime={timeRange.startTime}
+        initialEndTime={timeRange.endTime}
+        onConfirm={setTimeRange}
+      />
     </div>
   );
 }
