@@ -3,6 +3,7 @@ import { Layout } from './components/Layout';
 import { HomePage } from './pages/HomePage';
 import { FieldsPage } from './pages/FieldsPage';
 import { EquipmentPage } from './pages/EquipmentPage';
+import { SchedulePage } from './pages/SchedulePage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 import './App.css'; // Vite expects this or we can just leave it
 
@@ -14,7 +15,7 @@ function App() {
           <Route index element={<HomePage />} />
           <Route path="fields" element={<FieldsPage />} />
           <Route path="equipment" element={<EquipmentPage />} />
-          <Route path="schedule" element={<PlaceholderPage title="Lịch trình" />} />
+          <Route path="schedule" element={<SchedulePage />} />
           <Route path="settings" element={<PlaceholderPage title="Cài đặt" />} />
         </Route>
       </Routes>
