@@ -52,41 +52,9 @@ export function Layout() {
 
       {/* MAIN CANVAS */}
       <main className="ml-[260px] flex-1 flex flex-col h-screen overflow-hidden">
-        {/* TOP APP BAR */}
-        <header className="h-24 flex justify-between items-center px-10 w-full bg-[#F7F9FF] sticky top-0 z-10 flex-shrink-0">
-          {/* Note: The Title here is extracted dynamically or hidden depending on page. We will let each page handle its own title or just keep it dynamic. In the prototype it's hardcoded to TRANG CHỦ. Let's make it static or handled by Outlet context, or simple mapping. Actually, let's keep it here and use useLocation to show the title. */}
-          <PageTitle />
-          <div className="flex items-center gap-6">
-            <button className="hover:bg-slate-100 rounded-full p-2 transition-opacity active:opacity-80">
-              <span className="material-symbols-outlined text-slate-600 text-3xl">notifications</span>
-            </button>
-            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-surface-container-high transition-opacity active:opacity-80 cursor-pointer">
-              <img
-                alt="Account"
-                className="w-full h-full object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQaQZJLev-2VWhffiyzXlT-Dqh6B1mbjYBLJYxWv3kvQAfl4nQ1VFMGYEqqCtMKE4r_vT3kpqEFxpAFfmTd_-i2S9WT-SxSyF3DJK1ish3sr-yhtIpMwU6vYvPoJpP7Z6qT3MFD9-OPcORYRiHT57JQ4UZomvf1kvXz_VjnJak4-b8UVo3G-kF_osMZjqqbXw0ZXNeAtM7ZsKnTxDexl9HsvH4angrESBfJJ-jz_JZz3_O67QLsySoDm2LVGPBdP-1HO5VWd-nm80"
-              />
-            </div>
-          </div>
-        </header>
-
         {/* CONTENT */}
         <Outlet />
       </main>
     </div>
-  );
-}
-
-// Helper to display current page title
-import { useLocation } from 'react-router-dom';
-
-function PageTitle() {
-  const location = useLocation();
-  const currentItem = navItems.find((item) => item.path === location.pathname);
-  
-  return (
-    <h1 className="text-4xl font-bold text-on-background tracking-tight uppercase">
-      {currentItem ? currentItem.label : ''}
-    </h1>
   );
 }
