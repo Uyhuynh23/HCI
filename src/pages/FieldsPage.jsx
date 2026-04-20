@@ -1,4 +1,9 @@
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
 export function FieldsPage() {
+  const navigate = useNavigate();
+
   return (
     <div className="flex-1 overflow-y-auto">
       {/* TopNavBar Shell */}
@@ -143,7 +148,7 @@ export function FieldsPage() {
                 <span className="body-style !text-on-surface whitespace-nowrap">12 phút</span>
               </div>
               <div className="text-right">
-                <button className="px-6 py-3 bg-surface-container text-on-surface action-style rounded-xl hover:bg-surface-container-high active:scale-95 transition-all">Quản lý</button>
+                <button onClick={() => navigate('/fields/2')} className="px-6 py-3 bg-surface-container text-on-surface action-style rounded-xl hover:bg-surface-container-high active:scale-95 transition-all cursor-pointer">Quản lý</button>
               </div>
             </div>
 
