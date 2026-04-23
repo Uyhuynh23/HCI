@@ -1,11 +1,80 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useApp } from '../context/AppContext';
 import { AddScheduleModal } from '../components/AddScheduleModal';
+import { format } from 'date-fns';
+
+const SPORT_CONFIG = {
+  Pickleball: { icon: 'mountain_steam', color: 'bg-blue-400', textColor: 'text-white', statusBorder: 'border-[#1a73e8]', statusBg: 'bg-[#d8e2ff]', statusText: 'text-[#1a73e8]' },
+  'Cầu lông': { icon: 'sports_tennis', color: 'bg-[#006e25]', textColor: 'text-white', statusBorder: 'border-[#006e25]', statusBg: 'bg-[#dcfce7]', statusText: 'text-[#006e25]' },
+  'Bóng chuyền': { icon: 'sports_volleyball', color: 'bg-[#d9534f]', textColor: 'text-white', statusBorder: 'border-[#d9534f]', statusBg: 'bg-[#ffdad7]', statusText: 'text-[#d9534f]' },
+};
 
 export function FieldDetailPage() {
+  const { id } = useParams();
   const navigate = useNavigate();
+  const { fields, schedules, updateField, addActivity } = useApp();
+
   const [isTurnOffModalOpen, setIsTurnOffModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  const field = fields.find((f) => f.id === id);
+
+  // Field not found
+  if (!field) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center bg-[#f8f9fa] gap-6">
+        <span className="material-symbols-outlined text-[80px] text-surface-dim">error_outline</span>
+        <h2 className="text-[32px] font-bold text-on-surface-variant">Không tìm thấy sân</h2>
+        <p className="text-[18px] text-on-surface-variant">Sân với ID "{id}" không tồn tại.</p>
+        <button
+          onClick={() => navigate('/fields')}
+          className="px-8 py-3 bg-primary text-on-primary rounded-xl font-bold text-[18px] active:scale-95 transition-all"
+        >
+          Quay lại danh sách sân
+        </button>
+      </div>
+    );
+  }
+
+  const sportConfig = SPORT_CONFIG[field.sport] || SPORT_CONFIG['Pickleball'];
+  const today = format(new Date(), 'yyyy-MM-dd');
+  const todaySchedules = schedules
+    .filter((s) => s.fieldId === field.id && s.date === today)
+    .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+  // Current time for display
+  const now = new Date();
+  const currentTime = format(now, 'HH:mm');
+
+  const handleSportChange = (sport) => {
+    updateField(field.id, { sport, status: 'active', timeRemaining: 60 });
+    addActivity({
+      message: `${field.name} đã chuyển sang chế độ ${sport}.`,
+      type: 'info',
+    });
+  };
+
+  const handleTurnOffLights = () => {
+    updateField(field.id, { status: 'idle', timeRemaining: null });
+    addActivity({
+      message: `Đã tắt toàn bộ đèn tại ${field.name}.`,
+      type: 'warning',
+    });
+    setIsTurnOffModalOpen(false);
+  };
+
+  const getScheduleStatus = (schedule) => {
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const [sh, sm] = schedule.startTime.split(':').map(Number);
+    const [eh, em] = schedule.endTime.split(':').map(Number);
+    const startMinutes = sh * 60 + sm;
+    const endMinutes = eh * 60 + em;
+
+    if (nowMinutes >= startMinutes && nowMinutes < endMinutes) return 'ongoing';
+    if (nowMinutes < startMinutes) return 'upcoming';
+    return 'completed';
+  };
 
   return (
     <div className="flex-1 flex flex-col bg-[#f8f9fa] overflow-y-auto relative antialiased">
@@ -18,14 +87,14 @@ export function FieldDetailPage() {
            >
              <span className="material-symbols-outlined text-slate-700">arrow_back</span>
            </button>
-           <h2 className="text-[32px] font-bold uppercase text-slate-900 leading-[1.2]">QUẢN LÝ SÂN 2</h2>
+           <h2 className="text-[32px] font-bold uppercase text-slate-900 leading-[1.2]">QUẢN LÝ {field.name.toUpperCase()}</h2>
         </div>
         <div className="flex items-center gap-6">
           <button className="hover:bg-slate-200 rounded-full p-2 transition-colors duration-300 ease-in-out active:scale-95">
             <span className="material-symbols-outlined text-blue-700 text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>notifications</span>
           </button>
           <div className="h-10 w-[1px] bg-slate-300"></div>
-          <span className="text-[16px] font-bold text-slate-900">14:25</span>
+          <span className="text-[16px] font-bold text-slate-900">{currentTime}</span>
         </div>
       </header>
 
@@ -35,16 +104,18 @@ export function FieldDetailPage() {
         <section className="col-span-6 flex flex-col gap-8">
           
           {/* Status Card */}
-          <div className="bg-white p-10 rounded-[2rem] shadow-sm flex items-center gap-8 border-l-[12px] border-[#d9534f]">
-            <div className="bg-[#ffdad7] w-24 h-24 rounded-2xl flex items-center justify-center text-[#d9534f] shrink-0">
-              <span className="material-symbols-outlined text-[60px]" style={{ fontVariationSettings: "'FILL' 1" }}>sports_volleyball</span>
+          <div className={`bg-white p-10 rounded-[2rem] shadow-sm flex items-center gap-8 border-l-[12px] ${sportConfig.statusBorder}`}>
+            <div className={`${sportConfig.statusBg} w-24 h-24 rounded-2xl flex items-center justify-center ${sportConfig.statusText} shrink-0`}>
+              <span className="material-symbols-outlined text-[60px]" style={{ fontVariationSettings: "'FILL' 1" }}>{sportConfig.icon}</span>
             </div>
             <div className="flex-1 flex flex-col">
-              <h3 className="text-[16px] font-bold text-slate-500 tracking-widest uppercase mb-1">SÁN 02</h3>
-              <p className="text-[20px] font-bold text-[#212529] mb-2 leading-[1.4]">ĐANG CHIẾU: 1 SÂN BÓNG CHUYỀN</p>
+              <h3 className="text-[16px] font-bold text-slate-500 tracking-widest uppercase mb-1">{field.name.toUpperCase()}</h3>
+              <p className="text-[20px] font-bold text-[#212529] mb-2 leading-[1.4]">
+                {field.status === 'active' ? `ĐANG CHIẾU: 1 SÂN ${field.sport.toUpperCase()}` : 'ĐÈN TẮT'}
+              </p>
               <div className="flex items-center gap-2 text-[#1a73e8] font-bold text-[20px]">
                 <span className="material-symbols-outlined">timer</span>
-                <span>Thời gian còn lại: 00:12</span>
+                <span>Thời gian còn lại: {field.timeRemaining ? `00:${String(field.timeRemaining).padStart(2, '0')}` : '--:--'}</span>
               </div>
             </div>
           </div>
@@ -53,22 +124,31 @@ export function FieldDetailPage() {
           <div className="flex flex-col gap-6">
             <h3 className="text-[24px] font-bold text-[#212529] px-2">Thay đổi nhanh</h3>
             <div className="grid grid-cols-3 gap-4">
-               <button className="bg-[#d9534f] p-6 rounded-2xl flex flex-col items-center justify-center gap-4 h-48 shadow-lg active:scale-95 transition-transform text-white font-bold text-[20px]">
+               <button 
+                 onClick={() => handleSportChange('Bóng chuyền')}
+                 className={`p-6 rounded-2xl flex flex-col items-center justify-center gap-4 h-48 shadow-lg active:scale-95 transition-transform text-white font-bold text-[20px] ${field.sport === 'Bóng chuyền' ? 'bg-[#d9534f] ring-4 ring-[#d9534f]/40' : 'bg-[#d9534f]'}`}
+               >
                   <span className="material-symbols-outlined text-[48px]" style={{ fontVariationSettings: "'FILL' 1" }}>sports_volleyball</span>
                   <span>Bóng chuyền</span>
                </button>
-               <button className="bg-[#006e25] p-6 rounded-2xl flex flex-col items-center justify-center gap-4 h-48 shadow-lg active:scale-95 transition-transform text-white font-bold text-[20px]">
+               <button 
+                 onClick={() => handleSportChange('Cầu lông')}
+                 className={`p-6 rounded-2xl flex flex-col items-center justify-center gap-4 h-48 shadow-lg active:scale-95 transition-transform text-white font-bold text-[20px] ${field.sport === 'Cầu lông' ? 'bg-[#006e25] ring-4 ring-[#006e25]/40' : 'bg-[#006e25]'}`}
+               >
                   <span className="material-symbols-outlined text-[48px]" style={{ fontVariationSettings: "'FILL' 1" }}>sports_tennis</span>
                   <span className="text-center leading-tight">Cầu lông</span>
                </button>
-               <button className="bg-blue-400 p-6 rounded-2xl flex flex-col items-center justify-center gap-4 h-48 shadow-lg active:scale-95 transition-transform text-white font-bold text-[20px]">
+               <button 
+                 onClick={() => handleSportChange('Pickleball')}
+                 className={`p-6 rounded-2xl flex flex-col items-center justify-center gap-4 h-48 shadow-lg active:scale-95 transition-transform text-white font-bold text-[20px] ${field.sport === 'Pickleball' ? 'bg-blue-400 ring-4 ring-blue-400/40' : 'bg-blue-400'}`}
+               >
                   <span className="material-symbols-outlined text-[48px]" style={{ fontVariationSettings: "'FILL' 1" }}>mountain_steam</span>
                   <span className="text-center leading-tight">Pickleball</span>
                </button>
             </div>
           </div>
 
-          {/* Swipe Slider / Turn Off All */}
+          {/* Turn Off All */}
           <div className="mt-8 flex justify-center">
             <button onClick={() => setIsTurnOffModalOpen(true)} className="w-fit px-10 bg-[#ba1a1a] rounded-2xl flex items-center justify-center gap-4 active:scale-[0.98] transition-transform shadow-xl text-white h-16 border-none">
                <div className="flex items-center gap-6">
@@ -84,35 +164,42 @@ export function FieldDetailPage() {
         <section className="col-span-4 bg-[#f1f4f9] rounded-[2rem] p-8 flex flex-col h-fit">
           <h3 className="text-[24px] font-bold text-[#212529] mb-8">Lịch trình hôm nay</h3>
           <div className="flex-1 flex flex-col gap-6">
-             {/* Slot 1 */}
-            <div className="bg-white p-6 rounded-2xl flex items-start gap-5 shadow-sm">
-                <div className="bg-[#d8e2ff] text-[#1a73e8] font-bold py-2 px-3 rounded-xl text-[16px] whitespace-nowrap">
-                   14:00 - 16:00
+            {todaySchedules.map((schedule, index) => {
+              const status = getScheduleStatus(schedule);
+              return (
+                <div 
+                  key={schedule.id} 
+                  className={`bg-white p-6 rounded-2xl flex items-start gap-5 shadow-sm ${
+                    status === 'completed' ? 'opacity-60' : status === 'upcoming' ? 'opacity-80' : ''
+                  }`}
+                >
+                  <div className={`font-bold py-2 px-3 rounded-xl text-[16px] whitespace-nowrap ${
+                    status === 'ongoing' ? 'bg-[#d8e2ff] text-[#1a73e8]' : 'bg-[#e0e3e8] text-[#414754]'
+                  }`}>
+                    {schedule.startTime} - {schedule.endTime}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[18px] text-[#212529] font-bold leading-tight">Sân {schedule.sport}</p>
+                    {status === 'ongoing' && (
+                      <span className="inline-block mt-2 bg-[#006e25] text-white text-[12px] font-bold px-3 py-1 rounded-full uppercase tracking-tighter">Diễn ra</span>
+                    )}
+                    {status === 'upcoming' && (
+                      <span className="inline-block mt-2 bg-[#1a73e8] text-white text-[12px] font-bold px-3 py-1 rounded-full uppercase tracking-tighter">SẮP TỚI</span>
+                    )}
+                    {status === 'completed' && (
+                      <span className="inline-block mt-2 bg-[#6c757d] text-white text-[12px] font-bold px-3 py-1 rounded-full uppercase tracking-tighter">HOÀN THÀNH</span>
+                    )}
+                  </div>
                 </div>
-                <div className="flex-1">
-                   <p className="text-[18px] text-[#212529] font-bold leading-tight">Sân Bóng chuyền</p>
-                   <span className="inline-block mt-2 bg-[#006e25] text-white text-[12px] font-bold px-3 py-1 rounded-full uppercase tracking-tighter">Diễn ra</span>
-                </div>
-            </div>
-             {/* Slot 2 */}
-            <div className="bg-white p-6 rounded-2xl flex items-start gap-5 shadow-sm opacity-80">
-                <div className="bg-[#e0e3e8] text-[#414754] font-bold py-2 px-3 rounded-xl text-[16px] whitespace-nowrap">
-                   16:30 - 18:30
-                </div>
-                <div className="flex-1">
-                   <p className="text-[18px] text-[#212529] font-bold leading-tight">Sân Cầu lông</p>
-                   <span className="inline-block mt-2 bg-[#1a73e8] text-white text-[12px] font-bold px-3 py-1 rounded-full uppercase tracking-tighter">SẮP TỚI</span>
-                </div>
-            </div>
-             {/* Slot 3 */}
-            <div className="bg-white p-6 rounded-2xl flex items-start gap-5 shadow-sm opacity-60">
-                <div className="bg-[#e0e3e8] text-[#414754] font-bold py-2 px-3 rounded-xl text-[16px] whitespace-nowrap">
-                   19:00 - 21:00
-                </div>
-                <div className="flex-1">
-                   <p className="text-[18px] text-[#212529] font-bold leading-tight">Sân Pickleball</p>
-                </div>
-            </div>
+              );
+            })}
+
+            {todaySchedules.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-8 text-[#6c757d]">
+                <span className="material-symbols-outlined text-[48px] mb-2">event_busy</span>
+                <p className="text-[16px] font-medium">Chưa có lịch trình hôm nay</p>
+              </div>
+            )}
           </div>
           
           <button onClick={() => setIsAddModalOpen(true)} className="mt-8 bg-[#1a73e8] text-white h-20 rounded-2xl font-bold text-[20px] flex items-center justify-center gap-3 shadow-[0_12px_24px_rgba(26,115,232,0.3)] active:scale-95 transition-all w-full border-none">
@@ -138,13 +225,13 @@ export function FieldDetailPage() {
             </div>
             <h2 className="text-[28px] font-black text-[#101828] leading-[1.2] uppercase mb-4 tracking-tight">XÁC NHẬN TẮT<br/>TOÀN BỘ ĐÈN?</h2>
             <p className="text-[16px] text-slate-500 mb-8 leading-normal font-medium">
-              Bạn có chắc chắn muốn tắt toàn bộ hệ thống đèn tại Khu vực 1 không? Hành động này sẽ dừng tất cả các trận đấu đang diễn ra.
+              Bạn có chắc chắn muốn tắt toàn bộ hệ thống đèn tại {field.name} không? Hành động này sẽ dừng tất cả các trận đấu đang diễn ra.
             </p>
             <div className="flex flex-col gap-3 w-full">
               <button onClick={() => setIsTurnOffModalOpen(false)} className="w-full bg-[#f1f4f9] hover:bg-[#e2e8f0] text-[#101828] font-bold py-4 rounded-2xl text-[18px] transition-colors border-none">
                 Không, Quay lại
               </button>
-              <button onClick={() => setIsTurnOffModalOpen(false)} className="w-full bg-[#ba1a1a] hover:bg-[#93000a] text-white font-bold py-4 rounded-2xl text-[18px] transition-colors shadow-md border-none">
+              <button onClick={handleTurnOffLights} className="w-full bg-[#ba1a1a] hover:bg-[#93000a] text-white font-bold py-4 rounded-2xl text-[18px] transition-colors shadow-md border-none">
                 Đồng Ý Tắt
               </button>
             </div>

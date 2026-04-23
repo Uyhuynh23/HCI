@@ -1,7 +1,59 @@
 import React, { useState } from 'react';
+import { useApp } from '../context/AppContext';
 
 export function EquipmentPage() {
-  const [isDisconnectModalOpen, setIsDisconnectModalOpen] = useState(false);
+  const { equipment, updateEquipment, batchUpdateEquipment, addActivity } = useApp();
+  const [disconnectTarget, setDisconnectTarget] = useState(null);
+
+  const connectedCount = equipment.filter((e) => e.connectionStatus === 'connected').length;
+  const totalCount = equipment.length;
+  const warningCount = equipment.filter((e) => e.connectionStatus !== 'connected').length;
+
+  const handleDisconnect = (device) => {
+    setDisconnectTarget(device);
+  };
+
+  const confirmDisconnect = () => {
+    if (disconnectTarget) {
+      updateEquipment(disconnectTarget.id, { connectionStatus: 'disconnected' });
+      addActivity({
+        message: `Đã ngắt kết nối thiết bị ${disconnectTarget.fieldName}.`,
+        type: 'warning',
+      });
+      setDisconnectTarget(null);
+    }
+  };
+
+  const handleCancel = (device) => {
+    updateEquipment(device.id, { connectionStatus: 'disconnected' });
+    addActivity({
+      message: `Đã hủy kết nối thiết bị ${device.fieldName}.`,
+      type: 'info',
+    });
+  };
+
+  const handleConnectAll = () => {
+    batchUpdateEquipment({ connectionStatus: 'connected' });
+    addActivity({
+      message: `Đã kết nối tất cả ${totalCount} thiết bị.`,
+      type: 'info',
+    });
+  };
+
+  const getStatusDisplay = (status) => {
+    switch (status) {
+      case 'connected':
+        return { text: 'Đã kết nối', dotColor: 'bg-[#006e25]', textColor: 'text-[#006e25]', isItalic: false };
+      case 'connecting':
+        return { text: 'Đang kết nối...', dotColor: null, textColor: 'text-slate-500', isItalic: true };
+      case 'searching':
+        return { text: 'Đang tìm kiếm...', dotColor: null, textColor: 'text-slate-500', isItalic: true };
+      case 'disconnected':
+        return { text: 'Đã ngắt kết nối', dotColor: 'bg-[#ba1a1a]', textColor: 'text-[#ba1a1a]', isItalic: false };
+      default:
+        return { text: status, dotColor: null, textColor: 'text-slate-500', isItalic: false };
+    }
+  };
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#f8f9fc] overflow-hidden">
@@ -12,11 +64,16 @@ export function EquipmentPage() {
         </h1>
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2 bg-[#f1f4f9] px-4 py-2 rounded-full">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#006e25]"></div>
-            <span className="text-[15px] font-medium text-[#414754]">Hệ thống Ổn định</span>
+            <div className={`w-2.5 h-2.5 rounded-full ${warningCount === 0 ? 'bg-[#006e25]' : 'bg-[#c75b00]'}`}></div>
+            <span className="text-[15px] font-medium text-[#414754]">
+              {warningCount === 0 ? 'Hệ thống Ổn định' : `${warningCount} thiết bị cần xử lý`}
+            </span>
           </div>
-          <button className="text-slate-600 hover:bg-slate-100 p-2 rounded-full transition-colors flex items-center justify-center">
+          <button className="text-slate-600 hover:bg-slate-100 p-2 rounded-full transition-colors flex items-center justify-center relative">
             <span className="material-symbols-outlined text-[28px]">notifications</span>
+            {warningCount > 0 && (
+              <span className="absolute top-1 right-1 w-3 h-3 bg-[#ba1a1a] rounded-full border-2 border-white"></span>
+            )}
           </button>
           <button className="text-slate-600 hover:bg-slate-100 p-2 rounded-full transition-colors flex items-center justify-center">
             <span className="material-symbols-outlined text-[28px]">settings</span>
@@ -43,7 +100,7 @@ export function EquipmentPage() {
             <div className="absolute w-[200px] h-[200px] rounded-full border border-blue-400/50"></div>
             <div className="absolute w-[120px] h-[120px] rounded-full border border-blue-500/30 bg-blue-100/20"></div>
             
-            {/* Radar Sweep Line (approximate using CSS rotation) */}
+            {/* Radar Sweep Line */}
             <div className="absolute top-1/2 left-1/2 w-[180px] h-[2px] bg-gradient-to-r from-[#1A73E8] to-transparent origin-left rotate-[130deg]"></div>
 
             {/* Center Icon */}
@@ -57,114 +114,82 @@ export function EquipmentPage() {
           </h3>
           
           <button className="px-8 py-3 rounded-full bg-[#8cf2e5] text-[#005c53] font-bold text-[16px]">
-            Đã tìm thấy: 24 thiết bị
+            Đã tìm thấy: {totalCount} thiết bị
           </button>
 
         </div>
 
         {/* RIGHT - LIST */}
         <div className="w-1/2 bg-[#f1f4f9] p-8 overflow-y-auto border-l border-gray-200">
-          <button className="w-full bg-[#1A73E8] hover:bg-blue-700 active:scale-[0.99] transition-all text-white rounded-[16px] py-4 flex items-center justify-center gap-3 font-bold text-[18px] mb-8 shadow-sm">
+          <button 
+            onClick={handleConnectAll}
+            className="w-full bg-[#1A73E8] hover:bg-blue-700 active:scale-[0.99] transition-all text-white rounded-[16px] py-4 flex items-center justify-center gap-3 font-bold text-[18px] mb-8 shadow-sm"
+          >
             <span className="material-symbols-outlined text-[24px]">sync</span>
-            KẾT NỐI TẤT CẢ (24 THIẾT BỊ)
+            KẾT NỐI TẤT CẢ ({totalCount} THIẾT BỊ)
           </button>
 
           <div className="space-y-4">
-            {/* DEVICE ITEM 1 */}
-            <div className="bg-white p-6 rounded-[1.5rem] flex items-center justify-between shadow-sm">
-              <div className="flex items-center gap-5">
-                <div className="w-14 h-14 bg-[#f1f4f9] rounded-2xl flex items-center justify-center text-slate-600">
-                  <span className="material-symbols-outlined text-[28px]">precision_manufacturing</span>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-[18px] font-bold text-[#181c20] leading-none">Sân 1</span>
-                  <div className="flex items-center gap-2 text-[#006e25]">
-                    <div className="w-2 h-2 rounded-full bg-[#006e25]"></div>
-                    <span className="text-[14px] font-medium leading-none">Đã kết nối</span>
+            {equipment.map((device) => {
+              const statusDisplay = getStatusDisplay(device.connectionStatus);
+              const isConnected = device.connectionStatus === 'connected';
+              const isPending = device.connectionStatus === 'connecting' || device.connectionStatus === 'searching';
+              const isDisconnected = device.connectionStatus === 'disconnected';
+
+              return (
+                <div key={device.id} className={`bg-white p-6 rounded-[1.5rem] flex items-center justify-between shadow-sm ${isPending || isDisconnected ? 'opacity-80' : ''}`}>
+                  <div className="flex items-center gap-5">
+                    <div className={`w-14 h-14 bg-[#f1f4f9] rounded-2xl flex items-center justify-center ${isPending || isDisconnected ? 'text-slate-400' : 'text-slate-600'}`}>
+                      <span className="material-symbols-outlined text-[28px]">precision_manufacturing</span>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[18px] font-bold text-[#181c20] leading-none">{device.fieldName}</span>
+                      <div className="flex items-center gap-2">
+                        {statusDisplay.dotColor && (
+                          <div className={`w-2 h-2 rounded-full ${statusDisplay.dotColor}`}></div>
+                        )}
+                        <span className={`text-[14px] font-medium leading-none ${statusDisplay.textColor} ${statusDisplay.isItalic ? 'italic' : ''} ${!statusDisplay.dotColor ? 'mt-[2px]' : ''}`}>
+                          {statusDisplay.text}
+                        </span>
+                      </div>
+                    </div>
                   </div>
+                  {isConnected && (
+                    <button 
+                      onClick={() => handleDisconnect(device)} 
+                      className="border-2 border-[#e0e3e8] text-[#181c20] font-bold text-[16px] px-8 py-2.5 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                    >
+                      Ngắt
+                    </button>
+                  )}
+                  {isPending && (
+                    <button 
+                      onClick={() => handleCancel(device)}
+                      className="bg-[#e0e3e8] text-[#414754] font-bold text-[16px] px-8 py-2.5 rounded-xl hover:bg-gray-300/80 transition-colors border-2 border-transparent"
+                    >
+                      Hủy
+                    </button>
+                  )}
+                  {isDisconnected && (
+                    <button 
+                      onClick={() => {
+                        updateEquipment(device.id, { connectionStatus: 'connected' });
+                        addActivity({ message: `Đã kết nối lại thiết bị ${device.fieldName}.`, type: 'info' });
+                      }}
+                      className="bg-[#1A73E8] text-white font-bold text-[16px] px-8 py-2.5 rounded-xl hover:bg-blue-700 transition-colors border-2 border-transparent"
+                    >
+                      Kết nối
+                    </button>
+                  )}
                 </div>
-              </div>
-              <button onClick={() => setIsDisconnectModalOpen(true)} className="border-2 border-[#e0e3e8] text-[#181c20] font-bold text-[16px] px-8 py-2.5 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors">
-                Ngắt
-              </button>
-            </div>
-
-            {/* DEVICE ITEM 2 */}
-            <div className="bg-white p-6 rounded-[1.5rem] flex items-center justify-between shadow-sm">
-              <div className="flex items-center gap-5">
-                <div className="w-14 h-14 bg-[#f1f4f9] rounded-2xl flex items-center justify-center text-slate-600">
-                  <span className="material-symbols-outlined text-[28px]">precision_manufacturing</span>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-[18px] font-bold text-[#181c20] leading-none">Sân 2</span>
-                  <div className="flex items-center gap-2 text-[#006e25]">
-                    <div className="w-2 h-2 rounded-full bg-[#006e25]"></div>
-                    <span className="text-[14px] font-medium leading-none">Đã kết nối</span>
-                  </div>
-                </div>
-              </div>
-              <button onClick={() => setIsDisconnectModalOpen(true)} className="border-2 border-[#e0e3e8] text-[#181c20] font-bold text-[16px] px-8 py-2.5 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors">
-                Ngắt
-              </button>
-            </div>
-
-            {/* DEVICE ITEM 3 */}
-            <div className="bg-white p-6 rounded-[1.5rem] flex items-center justify-between shadow-sm">
-              <div className="flex items-center gap-5">
-                <div className="w-14 h-14 bg-[#f1f4f9] rounded-2xl flex items-center justify-center text-slate-600">
-                  <span className="material-symbols-outlined text-[28px]">precision_manufacturing</span>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-[18px] font-bold text-[#181c20] leading-none">Sân 3</span>
-                  <div className="flex items-center gap-2 text-[#006e25]">
-                    <div className="w-2 h-2 rounded-full bg-[#006e25]"></div>
-                    <span className="text-[14px] font-medium leading-none">Đã kết nối</span>
-                  </div>
-                </div>
-              </div>
-              <button onClick={() => setIsDisconnectModalOpen(true)} className="border-2 border-[#e0e3e8] text-[#181c20] font-bold text-[16px] px-8 py-2.5 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors">
-                Ngắt
-              </button>
-            </div>
-
-            {/* DEVICE ITEM 4 */}
-            <div className="bg-white/80 p-6 rounded-[1.5rem] flex items-center justify-between shadow-sm">
-              <div className="flex items-center gap-5">
-                <div className="w-14 h-14 bg-[#f1f4f9] rounded-2xl flex items-center justify-center text-slate-400">
-                  <span className="material-symbols-outlined text-[28px]">precision_manufacturing</span>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-[18px] font-bold text-[#181c20] leading-none">Sân 4</span>
-                  <span className="text-[14px] text-slate-500 italic leading-none mt-[2px]">Đang kết nối...</span>
-                </div>
-              </div>
-              <button className="bg-[#e0e3e8] text-[#414754] font-bold text-[16px] px-8 py-2.5 rounded-xl hover:bg-gray-300/80 transition-colors border-2 border-transparent">
-                Hủy
-              </button>
-            </div>
-
-            {/* DEVICE ITEM 5 */}
-            <div className="bg-white/80 p-6 rounded-[1.5rem] flex items-center justify-between shadow-sm">
-              <div className="flex items-center gap-5">
-                <div className="w-14 h-14 bg-[#f1f4f9] rounded-2xl flex items-center justify-center text-slate-400">
-                  <span className="material-symbols-outlined text-[28px]">precision_manufacturing</span>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-[18px] font-bold text-[#181c20] leading-none">Sân 5</span>
-                  <span className="text-[14px] text-slate-500 italic leading-none mt-[2px]">Đang tìm kiếm...</span>
-             </div>
-              </div>
-              <button className="bg-[#e0e3e8] text-[#414754] font-bold text-[16px] px-8 py-2.5 rounded-xl hover:bg-gray-300/80 transition-colors border-2 border-transparent">
-                Hủy
-              </button>
-            </div>
-
+              );
+            })}
           </div>
         </div>
       </div>
 
       {/* Disconnect Modal */}
-      {isDisconnectModalOpen && (
+      {disconnectTarget && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4">
           <div className="bg-white rounded-[2rem] p-10 max-w-[400px] w-full flex flex-col items-center text-center shadow-2xl relative animate-in fade-in zoom-in duration-200 border-b-[8px] border-[#1a73e8] overflow-hidden">
             <div className="w-24 h-24 bg-[#ffeed2] rounded-full flex items-center justify-center mb-6">
@@ -172,15 +197,19 @@ export function EquipmentPage() {
             </div>
             <h2 className="text-[28px] font-black text-[#101828] leading-[1.2] uppercase mb-4 tracking-tight">XÁC NHẬN<br/>NGẮT KẾT NỐI</h2>
             <p className="text-[18px] text-[#414754] mb-8 leading-normal font-medium">
-              Sân 1 hiện tại đang chiếu<br/>
-              <span className="text-[#1a73e8] font-bold text-[20px]">[Bóng chuyền]</span>.<br/><br/>
+              {disconnectTarget.fieldName} hiện tại đang chiếu<br/>
+              <span className="text-[#1a73e8] font-bold text-[20px]">[{(() => {
+                // Look up what sport this field is running
+                const fieldData = equipment.find(e => e.id === disconnectTarget.id);
+                return fieldData ? fieldData.fieldName : '';
+              })()}]</span>.<br/><br/>
               Bạn có chắc chắn muốn<br/>ngắt kết nối không?
             </p>
             <div className="flex gap-4 w-full">
-              <button onClick={() => setIsDisconnectModalOpen(false)} className="flex-1 bg-[#e0e3e8] hover:bg-[#d1d5db] text-[#101828] font-bold py-4 rounded-2xl text-[18px] transition-colors border-none">
+              <button onClick={() => setDisconnectTarget(null)} className="flex-1 bg-[#e0e3e8] hover:bg-[#d1d5db] text-[#101828] font-bold py-4 rounded-2xl text-[18px] transition-colors border-none">
                 Không
               </button>
-              <button onClick={() => setIsDisconnectModalOpen(false)} className="flex-1 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-bold py-4 rounded-2xl text-[18px] transition-colors shadow-md border-none">
+              <button onClick={confirmDisconnect} className="flex-1 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-bold py-4 rounded-2xl text-[18px] transition-colors shadow-md border-none">
                 Đồng Ý
               </button>
             </div>

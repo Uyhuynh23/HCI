@@ -1,25 +1,61 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useApp } from '../context/AppContext';
 import { AddScheduleModal } from '../components/AddScheduleModal';
 import { DateSelectionModal } from '../components/DateSelectionModal';
 import { TimeRangeSelectionModal } from '../components/TimeRangeSelectionModal';
 import { format } from 'date-fns';
 
+const SPORT_CONFIG = {
+  Pickleball: { icon: 'sports_tennis', colorClass: 'primary', badgeBg: 'bg-primary/10', badgeText: 'text-primary', borderColor: 'border-primary', iconBg: 'bg-primary-fixed text-on-primary-fixed-variant' },
+  'Cầu lông': { icon: 'sports_tennis', colorClass: 'secondary', badgeBg: 'bg-secondary/10', badgeText: 'text-secondary', borderColor: 'border-secondary', iconBg: 'bg-secondary-container text-on-secondary-container' },
+  'Bóng chuyền': { icon: 'sports_volleyball', colorClass: 'tertiary', badgeBg: 'bg-tertiary/10', badgeText: 'text-tertiary', borderColor: 'border-tertiary', iconBg: 'bg-tertiary-fixed text-on-tertiary-fixed-variant' },
+};
+
 export function FieldsPage() {
   const navigate = useNavigate();
+  const { fields, equipment } = useApp();
+  
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
   const [selectedFilterDate, setSelectedFilterDate] = useState(new Date());
-
   const [isTimeRangeModalOpen, setIsTimeRangeModalOpen] = useState(false);
   const [timeRange, setTimeRange] = useState({ startTime: '08:00', endTime: '10:00' });
 
-  // e.g. "Hôm nay, 24 Tháng 5" or "Thứ Sáu, 06 Tháng 10"
+  // Filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeSportFilter, setActiveSportFilter] = useState('Tất cả');
+  const [activeStatusFilter, setActiveStatusFilter] = useState('Tất cả');
+
+  // Notification badge
+  const warningCount = equipment.filter((e) => e.connectionStatus !== 'connected').length;
+
+  // Date display
   const dayNames = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
   const isToday = new Date().toDateString() === selectedFilterDate.toDateString();
   const dateDisplayString = isToday 
     ? `Hôm nay, ${format(selectedFilterDate, 'dd')} Tháng ${format(selectedFilterDate, 'MM')}`
     : `${dayNames[selectedFilterDate.getDay()]}, ${format(selectedFilterDate, 'dd')} Tháng ${format(selectedFilterDate, 'MM')}`;
+
+  // Apply filters
+  let filteredFields = [...fields];
+
+  if (searchQuery.trim()) {
+    const q = searchQuery.toLowerCase();
+    filteredFields = filteredFields.filter((f) => f.name.toLowerCase().includes(q));
+  }
+
+  if (activeSportFilter !== 'Tất cả') {
+    filteredFields = filteredFields.filter((f) => f.sport === activeSportFilter);
+  }
+
+  if (activeStatusFilter !== 'Tất cả') {
+    const statusMap = { 'Hoạt động': 'active', 'Trống': 'idle' };
+    filteredFields = filteredFields.filter((f) => f.status === statusMap[activeStatusFilter]);
+  }
+
+  const sportFilters = ['Tất cả', 'Pickleball', 'Cầu lông', 'Bóng chuyền'];
+  const statusFilters = ['Tất cả', 'Hoạt động', 'Trống'];
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -27,8 +63,11 @@ export function FieldsPage() {
       <header className="h-24 bg-white/70 dark:bg-slate-950/70 backdrop-blur-md sticky top-0 z-40 flex justify-between items-center px-12 shadow-sm border-none">
         <h2 className="h1-style text-on-surface tracking-tight">DANH SÁCH SÂN</h2>
         <div className="flex items-center gap-6">
-          <button className="w-12 h-12 flex items-center justify-center text-slate-600 hover:opacity-80 active:translate-y-0.5 duration-200">
+          <button className="w-12 h-12 flex items-center justify-center text-slate-600 hover:opacity-80 active:translate-y-0.5 duration-200 relative">
             <span className="material-symbols-outlined text-[28px]">notifications</span>
+            {warningCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-3 h-3 bg-[#ba1a1a] rounded-full border-2 border-white"></span>
+            )}
           </button>
           <button onClick={() => setIsAddModalOpen(true)} className="bg-primary text-on-primary action-style px-8 py-3 rounded-xl editorial-shadow active:translate-y-0.5 duration-200 flex items-center gap-2">
             <span className="material-symbols-outlined text-[24px]">add</span>
@@ -60,7 +99,13 @@ export function FieldsPage() {
               <span className="body-medium-style text-on-surface">Tìm kiếm</span>
               <div className="bg-surface-container-lowest p-4 rounded-xl flex items-center gap-2 border border-outline-variant/20">
                 <span className="material-symbols-outlined text-outline text-[24px]">search</span>
-                <input className="bg-transparent border-none focus:ring-0 w-full body-style p-0" placeholder="Tìm kiếm tên sân..." type="text" />
+                <input 
+                  className="bg-transparent border-none focus:ring-0 w-full body-style p-0 outline-none" 
+                  placeholder="Tìm kiếm tên sân..." 
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
             </div>
           </div>
@@ -68,18 +113,37 @@ export function FieldsPage() {
             <div className="flex flex-col gap-3">
               <span className="body-medium-style text-on-surface">Môn thể thao</span>
               <div className="flex gap-2">
-                <button className="px-6 py-2 rounded-full bg-primary text-on-primary action-style shadow-sm">Tất cả</button>
-                <button className="px-6 py-2 rounded-full bg-surface-container-lowest text-on-surface-variant action-style border border-outline-variant/20 hover:bg-white transition-colors">Pickleball</button>
-                <button className="px-6 py-2 rounded-full bg-surface-container-lowest text-on-surface-variant action-style border border-outline-variant/20 hover:bg-white transition-colors">Cầu lông</button>
-                <button className="px-6 py-2 rounded-full bg-surface-container-lowest text-on-surface-variant action-style border border-outline-variant/20 hover:bg-white transition-colors">Bóng chuyền</button>
+                {sportFilters.map((sport) => (
+                  <button
+                    key={sport}
+                    onClick={() => setActiveSportFilter(sport)}
+                    className={`px-6 py-2 rounded-full action-style transition-colors ${
+                      activeSportFilter === sport
+                        ? 'bg-primary text-on-primary shadow-sm'
+                        : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/20 hover:bg-white'
+                    }`}
+                  >
+                    {sport}
+                  </button>
+                ))}
               </div>
             </div>
             <div className="flex flex-col gap-3">
               <span className="body-medium-style text-on-surface">Trạng thái</span>
               <div className="flex gap-2">
-                <button className="px-6 py-2 rounded-full bg-primary text-on-primary action-style shadow-sm">Tất cả</button>
-                <button className="px-6 py-2 rounded-full bg-surface-container-lowest text-on-surface-variant action-style border border-outline-variant/20 hover:bg-white transition-colors">Hoạt động</button>
-                <button className="px-6 py-2 rounded-full bg-surface-container-lowest text-on-surface-variant action-style border border-outline-variant/20 hover:bg-white transition-colors">Trống</button>
+                {statusFilters.map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => setActiveStatusFilter(status)}
+                    className={`px-6 py-2 rounded-full action-style transition-colors ${
+                      activeStatusFilter === status
+                        ? 'bg-primary text-on-primary shadow-sm'
+                        : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/20 hover:bg-white'
+                    }`}
+                  >
+                    {status}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -97,101 +161,54 @@ export function FieldsPage() {
           
           {/* List Items */}
           <div className="space-y-8">
-            {/* Item 1 */}
-            <div className="grid grid-cols-6 items-center bg-surface-container-lowest p-8 rounded-[1.5rem] editorial-shadow border-l-[6px] border-primary transition-transform hover:scale-[1.01] gap-4">
-              <div className="col-span-2 flex items-center gap-4">
-                <div className="w-14 h-14 bg-primary-fixed text-on-primary-fixed-variant rounded-xl flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[32px]">sports_tennis</span>
+            {filteredFields.map((field) => {
+              const config = SPORT_CONFIG[field.sport] || SPORT_CONFIG['Pickleball'];
+              return (
+                <div
+                  key={field.id}
+                  className={`grid grid-cols-6 items-center bg-surface-container-lowest p-8 rounded-[1.5rem] editorial-shadow border-l-[6px] ${config.borderColor} transition-transform hover:scale-[1.01] gap-4`}
+                >
+                  <div className="col-span-2 flex items-center gap-4">
+                    <div className={`w-14 h-14 ${config.iconBg} rounded-xl flex items-center justify-center`}>
+                      <span className="material-symbols-outlined text-[32px]">{config.icon}</span>
+                    </div>
+                    <div>
+                      <h3 className="body-medium-style text-on-surface leading-none">{field.name}</h3>
+                    </div>
+                  </div>
+                  <div className="flex justify-center">
+                    <span className={`inline-flex px-4 py-2 rounded-lg ${config.badgeBg} ${config.badgeText} body-medium-style uppercase whitespace-nowrap`}>
+                      {field.sport}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 justify-center">
+                    <span className={`body-medium-style whitespace-nowrap ${field.status === 'active' ? 'text-error' : 'text-secondary'}`}>
+                      {field.status === 'active' ? 'Hoạt động' : 'Trống'}
+                    </span>
+                  </div>
+                  <div className="text-center flex justify-center items-center">
+                    <span className="body-style !text-on-surface whitespace-nowrap">
+                      {field.status === 'active' && field.timeRemaining ? `${field.timeRemaining} phút` : '--:--'}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <button
+                      onClick={() => navigate(`/fields/${field.id}`)}
+                      className="px-6 py-3 bg-surface-container text-on-surface action-style rounded-xl hover:bg-surface-container-high active:scale-95 transition-all cursor-pointer"
+                    >
+                      Quản lý
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="body-medium-style text-on-surface leading-none">Sân 1</h3>
-                </div>
-              </div>
-              <div className="flex justify-center">
-                <span className="inline-flex px-4 py-2 rounded-lg bg-primary/10 text-primary body-medium-style uppercase whitespace-nowrap">Pickleball</span>
-              </div>
-              <div className="flex items-center gap-2 justify-center">
-                <span className="body-medium-style text-error whitespace-nowrap">Hoạt động</span>
-              </div>
-              <div className="text-center flex justify-center items-center">
-                <span className="body-style !text-on-surface whitespace-nowrap">45 phút</span>
-              </div>
-              <div className="text-right">
-                <button className="px-6 py-3 bg-surface-container text-on-surface action-style rounded-xl hover:bg-surface-container-high active:scale-95 transition-all">Quản lý</button>
-              </div>
-            </div>
-            
-            {/* Item 2 */}
-            <div className="grid grid-cols-6 items-center bg-surface-container-lowest p-8 rounded-[1.5rem] editorial-shadow border-l-[6px] border-secondary transition-transform hover:scale-[1.01] gap-4">
-              <div className="col-span-2 flex items-center gap-4">
-                <div className="w-14 h-14 bg-secondary-container text-on-secondary-container rounded-xl flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[32px]">sports_tennis</span>
-                </div>
-                <div>
-                  <h3 className="body-medium-style text-on-surface leading-none">Sân 4</h3>
-                </div>
-              </div>
-              <div className="flex justify-center">
-                <span className="inline-flex px-4 py-2 rounded-lg bg-secondary/10 text-secondary body-medium-style uppercase whitespace-nowrap">Cầu lông</span>
-              </div>
-              <div className="flex items-center gap-2 justify-center">
-                <span className="body-medium-style text-secondary whitespace-nowrap">Trống</span>
-              </div>
-              <div className="text-center flex justify-center items-center">
-                <span className="body-style whitespace-nowrap">--:--</span>
-              </div>
-              <div className="text-right">
-                <button className="px-6 py-3 bg-surface-container text-on-surface action-style rounded-xl hover:bg-surface-container-high active:scale-95 transition-all">Quản lý</button>
-              </div>
-            </div>
+              );
+            })}
 
-            {/* Item 3 */}
-            <div className="grid grid-cols-6 items-center bg-surface-container-lowest p-8 rounded-[1.5rem] editorial-shadow border-l-[6px] border-tertiary transition-transform hover:scale-[1.01] gap-4">
-              <div className="col-span-2 flex items-center gap-4">
-                <div className="w-14 h-14 bg-tertiary-fixed text-on-tertiary-fixed-variant rounded-xl flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[32px]">sports_volleyball</span>
-                </div>
-                <div>
-                  <h3 className="body-medium-style text-on-surface leading-none">Sân 2</h3>
-                </div>
+            {filteredFields.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-16 text-on-surface-variant">
+                <span className="material-symbols-outlined text-[64px] mb-4">search_off</span>
+                <p className="text-[20px] font-bold">Không tìm thấy sân phù hợp</p>
               </div>
-              <div className="flex justify-center">
-                <span className="inline-flex px-4 py-2 rounded-lg bg-tertiary/10 text-tertiary body-medium-style uppercase whitespace-nowrap">Bóng chuyền</span>
-              </div>
-              <div className="flex items-center gap-2 justify-center">
-                <span className="body-medium-style text-error whitespace-nowrap">Hoạt động</span>
-              </div>
-              <div className="text-center flex justify-center items-center">
-                <span className="body-style !text-on-surface whitespace-nowrap">12 phút</span>
-              </div>
-              <div className="text-right">
-                <button onClick={() => navigate('/fields/2')} className="px-6 py-3 bg-surface-container text-on-surface action-style rounded-xl hover:bg-surface-container-high active:scale-95 transition-all cursor-pointer">Quản lý</button>
-              </div>
-            </div>
-
-            {/* Item 4 */}
-            <div className="grid grid-cols-6 items-center bg-surface-container-lowest p-8 rounded-[1.5rem] editorial-shadow border-l-[6px] border-primary transition-transform hover:scale-[1.01] gap-4">
-              <div className="col-span-2 flex items-center gap-4">
-                <div className="w-14 h-14 bg-primary-fixed text-on-primary-fixed-variant rounded-xl flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[32px]">sports_tennis</span>
-                </div>
-                <div>
-                  <h3 className="body-medium-style text-on-surface leading-none">Sân 3</h3>
-                </div>
-              </div>
-              <div className="flex justify-center">
-                <span className="inline-flex px-4 py-2 rounded-lg bg-primary/10 text-primary body-medium-style uppercase whitespace-nowrap">Pickleball</span>
-              </div>
-              <div className="flex items-center gap-2 justify-center">
-                <span className="body-medium-style text-secondary whitespace-nowrap">Trống</span>
-              </div>
-              <div className="text-center flex justify-center items-center">
-                <span className="body-style whitespace-nowrap">--:--</span>
-              </div>
-              <div className="text-right">
-                <button className="px-6 py-3 bg-surface-container text-on-surface action-style rounded-xl hover:bg-surface-container-high active:scale-95 transition-all">Quản lý</button>
-              </div>
-            </div>
+            )}
           </div>
         </section>
 
