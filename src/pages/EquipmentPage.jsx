@@ -1,9 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
+import { playSuccessSound } from '../utils/audio';
 
 export function EquipmentPage() {
   const { equipment, updateEquipment, batchUpdateEquipment, addActivity } = useApp();
   const [disconnectTarget, setDisconnectTarget] = useState(null);
+
+  // Connect-all state machine: 'idle' | 'connecting' | 'success'
+  const [connectPhase, setConnectPhase] = useState('idle');
+  const connectTimerRef = useRef(null);
+  const successTimerRef = useRef(null);
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (connectTimerRef.current) clearTimeout(connectTimerRef.current);
+      if (successTimerRef.current) clearTimeout(successTimerRef.current);
+    };
+  }, []);
 
   const connectedCount = equipment.filter((e) => e.connectionStatus === 'connected').length;
   const totalCount = equipment.length;
@@ -20,6 +34,7 @@ export function EquipmentPage() {
         message: `Đã ngắt kết nối thiết bị ${disconnectTarget.fieldName}.`,
         type: 'warning',
       });
+      playSuccessSound();
       setDisconnectTarget(null);
     }
   };
@@ -33,11 +48,23 @@ export function EquipmentPage() {
   };
 
   const handleConnectAll = () => {
-    batchUpdateEquipment({ connectionStatus: 'connected' });
-    addActivity({
-      message: `Đã kết nối tất cả ${totalCount} thiết bị.`,
-      type: 'info',
-    });
+    if (connectPhase !== 'idle') return;
+    setConnectPhase('connecting');
+
+    connectTimerRef.current = setTimeout(() => {
+      // Phase transition: connecting → success
+      batchUpdateEquipment({ connectionStatus: 'connected' });
+      addActivity({
+        message: `Đã kết nối tất cả ${totalCount} thiết bị.`,
+        type: 'info',
+      });
+      playSuccessSound();
+      setConnectPhase('success');
+
+      successTimerRef.current = setTimeout(() => {
+        setConnectPhase('idle');
+      }, 2000);
+    }, 5000);
   };
 
   const getStatusDisplay = (status) => {
@@ -53,6 +80,41 @@ export function EquipmentPage() {
       default:
         return { text: status, dotColor: null, textColor: 'text-slate-500', isItalic: false };
     }
+  };
+
+  // Render connect-all button based on phase
+  const renderConnectAllButton = () => {
+    if (connectPhase === 'connecting') {
+      return (
+        <button
+          disabled
+          className="w-full bg-[#1A73E8] text-white rounded-[16px] py-4 flex items-center justify-center gap-3 font-bold text-[18px] mb-8 shadow-sm opacity-90 cursor-not-allowed"
+        >
+          <span className="material-symbols-outlined text-[24px] animate-spin">sync</span>
+          ĐANG KẾT NỐI...
+        </button>
+      );
+    }
+    if (connectPhase === 'success') {
+      return (
+        <button
+          disabled
+          className="w-full bg-[#006e25] text-white rounded-[16px] py-4 flex items-center justify-center gap-3 font-bold text-[18px] mb-8 shadow-sm cursor-not-allowed"
+        >
+          <span className="material-symbols-outlined text-[24px]">check_circle</span>
+          ĐÃ KẾT NỐI THÀNH CÔNG ✓
+        </button>
+      );
+    }
+    return (
+      <button
+        onClick={handleConnectAll}
+        className="w-full bg-[#1A73E8] hover:bg-blue-700 active:scale-[0.99] transition-all text-white rounded-[16px] py-4 flex items-center justify-center gap-3 font-bold text-[18px] mb-8 shadow-sm"
+      >
+        <span className="material-symbols-outlined text-[24px]">sync</span>
+        KẾT NỐI TẤT CẢ ({totalCount} THIẾT BỊ)
+      </button>
+    );
   };
 
   return (
@@ -121,13 +183,7 @@ export function EquipmentPage() {
 
         {/* RIGHT - LIST */}
         <div className="w-1/2 bg-[#f1f4f9] p-8 overflow-y-auto border-l border-gray-200">
-          <button 
-            onClick={handleConnectAll}
-            className="w-full bg-[#1A73E8] hover:bg-blue-700 active:scale-[0.99] transition-all text-white rounded-[16px] py-4 flex items-center justify-center gap-3 font-bold text-[18px] mb-8 shadow-sm"
-          >
-            <span className="material-symbols-outlined text-[24px]">sync</span>
-            KẾT NỐI TẤT CẢ ({totalCount} THIẾT BỊ)
-          </button>
+          {renderConnectAllButton()}
 
           <div className="space-y-4">
             {equipment.map((device) => {
@@ -139,7 +195,10 @@ export function EquipmentPage() {
               return (
                 <div key={device.id} className={`bg-white p-6 rounded-[1.5rem] flex items-center justify-between shadow-sm ${isPending || isDisconnected ? 'opacity-80' : ''}`}>
                   <div className="flex items-center gap-5">
-                    <div className={`w-14 h-14 bg-[#f1f4f9] rounded-2xl flex items-center justify-center ${isPending || isDisconnected ? 'text-slate-400' : 'text-slate-600'}`}>
+                    <div
+                      title="Bộ điều khiển chiếu sáng"
+                      className={`w-14 h-14 bg-[#f1f4f9] rounded-2xl flex items-center justify-center ${isPending || isDisconnected ? 'text-slate-400' : 'text-slate-600'}`}
+                    >
                       <span className="material-symbols-outlined text-[28px]">precision_manufacturing</span>
                     </div>
                     <div className="flex flex-col gap-1.5">
@@ -155,7 +214,8 @@ export function EquipmentPage() {
                     </div>
                   </div>
                   {isConnected && (
-                    <button 
+                    <button
+                      title="Ngắt kết nối thiết bị này"
                       onClick={() => handleDisconnect(device)} 
                       className="border-2 border-[#e0e3e8] text-[#181c20] font-bold text-[16px] px-8 py-2.5 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors"
                     >
@@ -163,7 +223,8 @@ export function EquipmentPage() {
                     </button>
                   )}
                   {isPending && (
-                    <button 
+                    <button
+                      title="Hủy quá trình kết nối"
                       onClick={() => handleCancel(device)}
                       className="bg-[#e0e3e8] text-[#414754] font-bold text-[16px] px-8 py-2.5 rounded-xl hover:bg-gray-300/80 transition-colors border-2 border-transparent"
                     >
@@ -171,10 +232,12 @@ export function EquipmentPage() {
                     </button>
                   )}
                   {isDisconnected && (
-                    <button 
+                    <button
+                      title="Kết nối lại thiết bị"
                       onClick={() => {
                         updateEquipment(device.id, { connectionStatus: 'connected' });
                         addActivity({ message: `Đã kết nối lại thiết bị ${device.fieldName}.`, type: 'info' });
+                        playSuccessSound();
                       }}
                       className="bg-[#1A73E8] text-white font-bold text-[16px] px-8 py-2.5 rounded-xl hover:bg-blue-700 transition-colors border-2 border-transparent"
                     >
@@ -199,7 +262,6 @@ export function EquipmentPage() {
             <p className="text-[18px] text-[#414754] mb-8 leading-normal font-medium">
               {disconnectTarget.fieldName} hiện tại đang chiếu<br/>
               <span className="text-[#1a73e8] font-bold text-[20px]">[{(() => {
-                // Look up what sport this field is running
                 const fieldData = equipment.find(e => e.id === disconnectTarget.id);
                 return fieldData ? fieldData.fieldName : '';
               })()}]</span>.<br/><br/>

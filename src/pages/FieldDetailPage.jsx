@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { AddScheduleModal } from '../components/AddScheduleModal';
+import { playSuccessSound } from '../utils/audio';
 import { format } from 'date-fns';
 
 const SPORT_CONFIG = {
@@ -9,6 +10,13 @@ const SPORT_CONFIG = {
   'Cầu lông': { icon: 'sports_tennis', color: 'bg-[#006e25]', textColor: 'text-white', statusBorder: 'border-[#006e25]', statusBg: 'bg-[#dcfce7]', statusText: 'text-[#006e25]' },
   'Bóng chuyền': { icon: 'sports_volleyball', color: 'bg-[#d9534f]', textColor: 'text-white', statusBorder: 'border-[#d9534f]', statusBg: 'bg-[#ffdad7]', statusText: 'text-[#d9534f]' },
 };
+
+function formatTime(seconds) {
+  if (seconds == null || seconds <= 0) return '--:--';
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
 
 export function FieldDetailPage() {
   const { id } = useParams();
@@ -19,6 +27,51 @@ export function FieldDetailPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const field = fields.find((f) => f.id === id);
+  const intervalRef = useRef(null);
+
+  // Live countdown timer
+  useEffect(() => {
+    if (!field) return;
+
+    // Clear any existing interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    if (field.status === 'active' && field.timeRemaining > 0) {
+      intervalRef.current = setInterval(() => {
+        const currentField = fields.find((f) => f.id === id);
+        if (!currentField || currentField.status !== 'active' || !currentField.timeRemaining || currentField.timeRemaining <= 0) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+          return;
+        }
+
+        const newTime = currentField.timeRemaining - 1;
+        if (newTime <= 0) {
+          // Timer reached zero
+          updateField(id, { status: 'idle', timeRemaining: null });
+          addActivity({
+            message: `Hết thời gian tại ${currentField.name}. Đèn đã tự động tắt.`,
+            type: 'warning',
+          });
+          playSuccessSound();
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        } else {
+          updateField(id, { timeRemaining: newTime });
+        }
+      }, 1000);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [field?.status, field?.id]);
 
   // Field not found
   if (!field) {
@@ -48,7 +101,7 @@ export function FieldDetailPage() {
   const currentTime = format(now, 'HH:mm');
 
   const handleSportChange = (sport) => {
-    updateField(field.id, { sport, status: 'active', timeRemaining: 60 });
+    updateField(field.id, { sport, status: 'active', timeRemaining: 3600 });
     addActivity({
       message: `${field.name} đã chuyển sang chế độ ${sport}.`,
       type: 'info',
@@ -61,6 +114,7 @@ export function FieldDetailPage() {
       message: `Đã tắt toàn bộ đèn tại ${field.name}.`,
       type: 'warning',
     });
+    playSuccessSound();
     setIsTurnOffModalOpen(false);
   };
 
@@ -115,7 +169,7 @@ export function FieldDetailPage() {
               </p>
               <div className="flex items-center gap-2 text-[#1a73e8] font-bold text-[20px]">
                 <span className="material-symbols-outlined">timer</span>
-                <span>Thời gian còn lại: {field.timeRemaining ? `00:${String(field.timeRemaining).padStart(2, '0')}` : '--:--'}</span>
+                <span>Thời gian còn lại: {formatTime(field.timeRemaining)}</span>
               </div>
             </div>
           </div>
@@ -164,7 +218,7 @@ export function FieldDetailPage() {
         <section className="col-span-4 bg-[#f1f4f9] rounded-[2rem] p-8 flex flex-col h-fit">
           <h3 className="text-[24px] font-bold text-[#212529] mb-8">Lịch trình hôm nay</h3>
           <div className="flex-1 flex flex-col gap-6">
-            {todaySchedules.map((schedule, index) => {
+            {todaySchedules.map((schedule) => {
               const status = getScheduleStatus(schedule);
               return (
                 <div 

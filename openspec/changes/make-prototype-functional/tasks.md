@@ -47,10 +47,4 @@
 - [x] 7.1 Refactor `AddScheduleModal.jsx` to accept a `useApp()` context reference. On "XÁC NHẬN", call `addSchedule()` with the form data (date, fieldId, sport, startTime, endTime) and `addActivity()` for the log entry.
 - [x] 7.2 Update all 3 usage sites (FieldsPage, FieldDetailPage, SchedulePage) to pass context-aware callbacks.
 
-## 8. Verification
 
-- [ ] 8.1 Launch dev server, navigate through all 5 main pages, verify no dead buttons remain.
-- [ ] 8.2 Create a schedule via AddScheduleModal, verify it appears on SchedulePage Gantt, FieldDetailPage schedule list, and HomePage activity log.
-- [ ] 8.3 Toggle equipment connections, verify state persists across page navigation.
-- [ ] 8.4 Reload the browser, verify all data persists from localStorage.
-- [ ] 8.5 Clear localStorage, reload, verify seed data populates correctly.

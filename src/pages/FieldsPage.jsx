@@ -162,33 +162,47 @@ export function FieldsPage() {
           {/* List Items */}
           <div className="space-y-8">
             {filteredFields.map((field) => {
+              const isIdle = field.status === 'idle';
               const config = SPORT_CONFIG[field.sport] || SPORT_CONFIG['Pickleball'];
+              const borderColor = isIdle ? 'border-outline-variant' : config.borderColor;
+              const iconBg = isIdle ? 'bg-surface-container text-outline' : config.iconBg;
+              const iconName = isIdle ? 'sports_score' : config.icon;
+
+              // Format time remaining from seconds to MM:SS
+              const timeDisplay = field.status === 'active' && field.timeRemaining
+                ? `${String(Math.floor(field.timeRemaining / 60)).padStart(2, '0')}:${String(field.timeRemaining % 60).padStart(2, '0')}`
+                : '--:--';
+
               return (
                 <div
                   key={field.id}
-                  className={`grid grid-cols-6 items-center bg-surface-container-lowest p-8 rounded-[1.5rem] editorial-shadow border-l-[6px] ${config.borderColor} transition-transform hover:scale-[1.01] gap-4`}
+                  className={`grid grid-cols-6 items-center bg-surface-container-lowest p-8 rounded-[1.5rem] editorial-shadow border-l-[6px] ${borderColor} transition-transform hover:scale-[1.01] gap-4`}
                 >
                   <div className="col-span-2 flex items-center gap-4">
-                    <div className={`w-14 h-14 ${config.iconBg} rounded-xl flex items-center justify-center`}>
-                      <span className="material-symbols-outlined text-[32px]">{config.icon}</span>
+                    <div className={`w-14 h-14 ${iconBg} rounded-xl flex items-center justify-center`}>
+                      <span className="material-symbols-outlined text-[32px]">{iconName}</span>
                     </div>
                     <div>
                       <h3 className="body-medium-style text-on-surface leading-none">{field.name}</h3>
                     </div>
                   </div>
                   <div className="flex justify-center">
-                    <span className={`inline-flex px-4 py-2 rounded-lg ${config.badgeBg} ${config.badgeText} body-medium-style uppercase whitespace-nowrap`}>
-                      {field.sport}
-                    </span>
+                    {isIdle ? (
+                      <span className="inline-flex px-4 py-2 rounded-lg bg-surface-container text-outline body-medium-style">—</span>
+                    ) : (
+                      <span className={`inline-flex px-4 py-2 rounded-lg ${config.badgeBg} ${config.badgeText} body-medium-style uppercase whitespace-nowrap`}>
+                        {field.sport}
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 justify-center">
-                    <span className={`body-medium-style whitespace-nowrap ${field.status === 'active' ? 'text-error' : 'text-secondary'}`}>
+                    <span className={`body-medium-style whitespace-nowrap ${field.status === 'active' ? 'text-error' : 'text-outline'}`}>
                       {field.status === 'active' ? 'Hoạt động' : 'Trống'}
                     </span>
                   </div>
                   <div className="text-center flex justify-center items-center">
                     <span className="body-style !text-on-surface whitespace-nowrap">
-                      {field.status === 'active' && field.timeRemaining ? `${field.timeRemaining} phút` : '--:--'}
+                      {timeDisplay}
                     </span>
                   </div>
                   <div className="text-right">

@@ -1,47 +1,47 @@
 ## 1. Audio Utility
 
-- [ ] 1.1 Create `src/utils/audio.js` with a `playSuccessSound()` function using Web Audio API — generates a short two-tone chime (~200ms), no external files needed.
+- [x] 1.1 Create `src/utils/audio.js` with a `playSuccessSound()` function using Web Audio API — generates a short two-tone chime (~200ms), no external files needed.
 
 ## 2. Connect-All Animation (`EquipmentPage.jsx`)
 
-- [ ] 2.1 Add local state machine `connectPhase`: `'idle'` | `'connecting'` | `'success'`. Add CSS `@keyframes spin` for the sync icon.
-- [ ] 2.2 On click: set phase to `'connecting'`, start 5s timer. After 5s: call `batchUpdateEquipment`, `addActivity`, set phase to `'success'`, play success sound. After 2s more: reset to `'idle'`.
-- [ ] 2.3 Button renders conditionally: idle → blue "KẾT NỐI TẤT CẢ", connecting → blue "ĐANG KẾT NỐI..." + spinning icon + disabled, success → green "ĐÃ KẾT NỐI THÀNH CÔNG ✓" + disabled.
-- [ ] 2.4 Cleanup: clear timers on unmount via `useEffect` return.
+- [x] 2.1 Add local state machine `connectPhase`: `'idle'` | `'connecting'` | `'success'`. Add CSS `@keyframes spin` for the sync icon.
+- [x] 2.2 On click: set phase to `'connecting'`, start 5s timer. After 5s: call `batchUpdateEquipment`, `addActivity`, set phase to `'success'`, play success sound. After 2s more: reset to `'idle'`.
+- [x] 2.3 Button renders conditionally: idle → blue "KẾT NỐI TẤT CẢ", connecting → blue "ĐANG KẾT NỐI..." + spinning icon + disabled, success → green "ĐÃ KẾT NỐI THÀNH CÔNG ✓" + disabled.
+- [x] 2.4 Cleanup: clear timers on unmount via `useEffect` return.
 
 ## 3. Equipment Tooltips (`EquipmentPage.jsx`)
 
-- [ ] 3.1 Add `title="Bộ điều khiển chiếu sáng"` on device icon container.
-- [ ] 3.2 Add `title="Ngắt kết nối thiết bị này"` on "Ngắt" buttons, `title="Kết nối lại thiết bị"` on "Kết nối" buttons, `title="Hủy quá trình kết nối"` on "Hủy" buttons.
+- [x] 3.1 Add `title="Bộ điều khiển chiếu sáng"` on device icon container.
+- [x] 3.2 Add `title="Ngắt kết nối thiết bị này"` on "Ngắt" buttons, `title="Kết nối lại thiết bị"` on "Kết nối" buttons, `title="Hủy quá trình kết nối"` on "Hủy" buttons.
 
 ## 4. Countdown Timer (`FieldDetailPage.jsx`)
 
-- [ ] 4.1 Add `useEffect` with `setInterval(1000)` that decrements `timeRemaining` by 1 each second when field is active and timeRemaining > 0. Call `updateField()` each tick.
-- [ ] 4.2 When timeRemaining reaches 0: clear interval, set status to `'idle'`, set timeRemaining to `null`, add activity log "Hết thời gian tại [field name]", play success sound.
-- [ ] 4.3 Update display format from `00:XX` to proper `MM:SS` (e.g., 125 → "02:05").
-- [ ] 4.4 Cleanup: clear interval on unmount and when field changes to idle.
+- [x] 4.1 Add `useEffect` with `setInterval(1000)` that decrements `timeRemaining` by 1 each second when field is active and timeRemaining > 0. Call `updateField()` each tick.
+- [x] 4.2 When timeRemaining reaches 0: clear interval, set status to `'idle'`, set timeRemaining to `null`, add activity log "Hết thời gian tại [field name]", play success sound.
+- [x] 4.3 Update display format from `00:XX` to proper `MM:SS` (e.g., 125 → "02:05").
+- [x] 4.4 Cleanup: clear interval on unmount and when field changes to idle.
 
 ## 5. Idle Field Display Fix (`FieldsPage.jsx`)
 
-- [ ] 5.1 In field list rendering: if `field.status === 'idle'`, show "—" in sport column with neutral gray text instead of colored sport badge.
-- [ ] 5.2 If idle: set border-left to `border-outline-variant` (gray) instead of sport-specific color.
-- [ ] 5.3 If idle: set icon background to neutral gray instead of sport-colored background.
-- [ ] 5.4 Change "Trống" status text from `text-secondary` (green) to `text-outline` (gray).
+- [x] 5.1 In field list rendering: if `field.status === 'idle'`, show "—" in sport column with neutral gray text instead of colored sport badge.
+- [x] 5.2 If idle: set border-left to `border-outline-variant` (gray) instead of sport-specific color.
+- [x] 5.3 If idle: set icon background to neutral gray instead of sport-colored background.
+- [x] 5.4 Change "Trống" status text from `text-secondary` (green) to `text-outline` (gray).
 
 ## 6. Schedule Font Size Increase (`SchedulePage.jsx`)
 
-- [ ] 6.1 Increase Gantt block sport name from `text-[18px]` to `text-[20px]`.
-- [ ] 6.2 Increase Gantt block time text from `text-[14px]` to `text-[16px]`.
-- [ ] 6.3 Increase time header from `text-[16px]` to `text-[18px]`.
-- [ ] 6.4 Increase field name label from `text-[20px]` to `text-[22px]`.
-- [ ] 6.5 Add `overflow-hidden text-ellipsis whitespace-nowrap` to both text spans inside DraggableBooking so text truncates on narrow cards.
-- [ ] 6.6 Add a `title` attribute to the DraggableBooking container: `title="{sport} — {startTime} - {endTime}"` so full info is visible on hover for any card size.
+- [x] 6.1 Increase Gantt block sport name from `text-[18px]` to `text-[20px]`.
+- [x] 6.2 Increase Gantt block time text from `text-[14px]` to `text-[16px]`.
+- [x] 6.3 Increase time header from `text-[16px]` to `text-[18px]`.
+- [x] 6.4 Increase field name label from `text-[20px]` to `text-[22px]`.
+- [x] 6.5 Add `overflow-hidden text-ellipsis whitespace-nowrap` to both text spans inside DraggableBooking so text truncates on narrow cards.
+- [x] 6.6 Add a `title` attribute to the DraggableBooking container: `title="{sport} — {startTime} - {endTime}"` so full info is visible on hover for any card size.
 
 ## 7. Wire Audio Feedback
 
-- [ ] 7.1 Call `playSuccessSound()` in `AddScheduleModal.jsx` after successful schedule creation.
-- [ ] 7.2 Call `playSuccessSound()` in `FieldDetailPage.jsx` after "Tắt toàn bộ đèn" confirmation.
-- [ ] 7.3 Call `playSuccessSound()` in `EquipmentPage.jsx` on individual device connect/disconnect success.
+- [x] 7.1 Call `playSuccessSound()` in `AddScheduleModal.jsx` after successful schedule creation.
+- [x] 7.2 Call `playSuccessSound()` in `FieldDetailPage.jsx` after "Tắt toàn bộ đèn" confirmation.
+- [x] 7.3 Call `playSuccessSound()` in `EquipmentPage.jsx` on individual device connect/disconnect success.
 
 ## 8. Verification
 

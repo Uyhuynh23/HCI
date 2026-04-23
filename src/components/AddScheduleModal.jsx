@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import { useApp } from '../context/AppContext';
 import { DateSelectionModal } from './DateSelectionModal';
+import { playSuccessSound } from '../utils/audio';
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
 const MINUTES = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
@@ -192,6 +193,7 @@ export function AddScheduleModal({ isOpen, onClose }) {
       message: `Lịch trình mới: ${selectedSport} tại ${selectedField?.name || 'Sân'} từ ${startTime} đến ${endTime}.`,
       type: 'info',
     });
+    playSuccessSound();
     onClose();
   };
 

@@ -83,7 +83,8 @@ const DraggableBooking = ({ schedule, color, leftPercent, widthPercent, containe
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
-      className="absolute h-20 flex flex-col justify-center px-4 shadow-md cursor-grab active:cursor-grabbing hover:brightness-105 select-none transition-shadow"
+      className="absolute h-20 flex flex-col justify-center px-4 shadow-md cursor-grab active:cursor-grabbing hover:brightness-105 select-none transition-shadow overflow-hidden"
+      title={`${schedule.sport} — ${schedule.startTime} - ${schedule.endTime}`}
       style={{
         left: `${leftPercent}%`,
         width: `${widthPercent}%`,
@@ -95,9 +96,9 @@ const DraggableBooking = ({ schedule, color, leftPercent, widthPercent, containe
         touchAction: 'none'
       }}
     >
-      <div className="pointer-events-none flex flex-col">
-        <span className="text-white font-bold text-[18px]">{schedule.sport}</span>
-        <span className="text-white/90 text-[14px]">{isDragging ? `${previewStart} - ${previewEnd}` : `${schedule.startTime} - ${schedule.endTime}`}</span>
+      <div className="pointer-events-none flex flex-col overflow-hidden">
+        <span className="text-white font-bold text-[20px] overflow-hidden text-ellipsis whitespace-nowrap">{schedule.sport}</span>
+        <span className="text-white/90 text-[16px] overflow-hidden text-ellipsis whitespace-nowrap">{isDragging ? `${previewStart} - ${previewEnd}` : `${schedule.startTime} - ${schedule.endTime}`}</span>
       </div>
     </div>
   );
@@ -281,7 +282,7 @@ export function SchedulePage() {
             <div className={`grid bg-[#e7e8e9] border-b border-[#d9dadb]`} style={{ gridTemplateColumns: `140px repeat(${GANTT_TOTAL_HOURS}, 1fr)` }}>
               <div className="p-6 border-r border-[#d9dadb] bg-[#e1e3e4] font-bold text-[18px] flex items-center justify-center text-[#191C1D]">Sân</div>
               {timeHeaders.map((t) => (
-                <div key={t} className="p-6 text-center font-bold text-[16px] text-[#414754]">{t}</div>
+                <div key={t} className="p-6 text-center font-bold text-[18px] text-[#414754]">{t}</div>
               ))}
             </div>
 
@@ -311,7 +312,7 @@ export function SchedulePage() {
 
                 return (
                   <div key={field.id} className={`min-h-[120px] ${rowIdx < displayFields.length - 1 ? 'border-b border-[#e1e3e4]' : ''}`} style={{ display: 'grid', gridTemplateColumns: '140px 1fr' }}>
-                    <div className="p-6 border-r border-[#e1e3e4] flex items-center justify-center bg-[#f3f4f5] font-bold text-[20px] text-[#191C1D] z-10">{field.name}</div>
+                    <div className="p-6 border-r border-[#e1e3e4] flex items-center justify-center bg-[#f3f4f5] font-bold text-[22px] text-[#191C1D] z-10">{field.name}</div>
                     <div ref={rowIdx === 0 ? measureContainer : undefined} className="relative p-4 flex items-center w-full">
                       {fieldSchedules.map((schedule) => {
                         const left = timeToPercent(schedule.startTime);
