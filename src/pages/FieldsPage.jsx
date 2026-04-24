@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { AddScheduleModal } from '../components/AddScheduleModal';
 import { DateSelectionModal } from '../components/DateSelectionModal';
 import { TimeRangeSelectionModal } from '../components/TimeRangeSelectionModal';
 import { format } from 'date-fns';
+import { getFieldStatus } from '../utils/statusUtils';
 
 const SPORT_CONFIG = {
   Pickleball: { icon: 'sports_tennis', colorClass: 'primary', badgeBg: 'bg-primary/10', badgeText: 'text-primary', borderColor: 'border-primary', iconBg: 'bg-primary-fixed text-on-primary-fixed-variant' },
@@ -14,18 +15,31 @@ const SPORT_CONFIG = {
 
 export function FieldsPage() {
   const navigate = useNavigate();
-  const { fields, equipment } = useApp();
+  const { fields, schedules, equipment } = useApp();
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
   const [selectedFilterDate, setSelectedFilterDate] = useState(new Date());
   const [isTimeRangeModalOpen, setIsTimeRangeModalOpen] = useState(false);
   const [timeRange, setTimeRange] = useState({ startTime: '08:00', endTime: '10:00' });
+  const [now, setNow] = useState(new Date());
+
+  // Update "now" every second for live status/countdown
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Filter state
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSportFilter, setActiveSportFilter] = useState('Tất cả');
   const [activeStatusFilter, setActiveStatusFilter] = useState('Tất cả');
+
+  // Map fields to include their derived status
+  const fieldsWithStatus = fields.map(f => ({
+    ...f,
+    ...getFieldStatus(f.id, schedules, now)
+  }));
 
   // Notification badge
   const warningCount = equipment.filter((e) => e.connectionStatus !== 'connected').length;
@@ -38,7 +52,7 @@ export function FieldsPage() {
     : `${dayNames[selectedFilterDate.getDay()]}, ${format(selectedFilterDate, 'dd')} Tháng ${format(selectedFilterDate, 'MM')}`;
 
   // Apply filters
-  let filteredFields = [...fields];
+  let filteredFields = [...fieldsWithStatus];
 
   if (searchQuery.trim()) {
     const q = searchQuery.toLowerCase();
@@ -113,19 +127,23 @@ export function FieldsPage() {
             <div className="flex flex-col gap-3">
               <span className="body-medium-style text-on-surface">Môn thể thao</span>
               <div className="flex gap-2">
-                {sportFilters.map((sport) => (
-                  <button
-                    key={sport}
-                    onClick={() => setActiveSportFilter(sport)}
-                    className={`px-6 py-2 rounded-full action-style transition-colors ${
-                      activeSportFilter === sport
-                        ? 'bg-primary text-on-primary shadow-sm'
-                        : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/20 hover:bg-white'
-                    }`}
-                  >
-                    {sport}
-                  </button>
-                ))}
+                {sportFilters.map((sport) => {
+                  const isDisabled = activeStatusFilter === 'Trống';
+                  return (
+                    <button
+                      key={sport}
+                      disabled={isDisabled}
+                      onClick={() => setActiveSportFilter(sport)}
+                      className={`px-6 py-2 rounded-full action-style transition-all ${
+                        activeSportFilter === sport
+                          ? 'bg-primary text-on-primary shadow-sm'
+                          : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/20 hover:bg-white'
+                      } ${isDisabled ? 'opacity-40 cursor-not-allowed grayscale-[0.5]' : ''}`}
+                    >
+                      {sport}
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div className="flex flex-col gap-3">
@@ -134,7 +152,12 @@ export function FieldsPage() {
                 {statusFilters.map((status) => (
                   <button
                     key={status}
-                    onClick={() => setActiveStatusFilter(status)}
+                    onClick={() => {
+                      setActiveStatusFilter(status);
+                      if (status === 'Trống') {
+                        setActiveSportFilter('Tất cả');
+                      }
+                    }}
                     className={`px-6 py-2 rounded-full action-style transition-colors ${
                       activeStatusFilter === status
                         ? 'bg-primary text-on-primary shadow-sm'

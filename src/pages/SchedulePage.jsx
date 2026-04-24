@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { AddScheduleModal } from '../components/AddScheduleModal';
 import { DateSelectionModal } from '../components/DateSelectionModal';
 import { format } from 'date-fns';
+import { getOverlappingSchedule } from '../utils/statusUtils';
 
 const SPORT_COLORS = {
   Pickleball: '#007BFF',
@@ -121,10 +122,21 @@ export function SchedulePage() {
       return () => ro.disconnect();
     }
   }, []);
-
   const handleDragEnd = (scheduleId, newStart, newEnd) => {
     const sched = schedules.find(s => s.id === scheduleId);
     if (!sched) return;
+
+    // Check for overlaps before committing drag
+    const overlapping = getOverlappingSchedule(sched.fieldId, dateStr, newStart, newEnd, schedules, scheduleId);
+    if (overlapping) {
+      // Reset is handled by the component state resetting to 0 offset
+      addActivity({
+        message: `Không thể di chuyển! Trùng với lịch ${overlapping.sport} (${overlapping.startTime} - ${overlapping.endTime}).`,
+        type: 'warning',
+      });
+      return;
+    }
+
     updateSchedule(scheduleId, { startTime: newStart, endTime: newEnd });
     addActivity({
       message: `Đã di chuyển lịch ${sched.sport} sang ${newStart} - ${newEnd}.`,
@@ -363,7 +375,13 @@ export function SchedulePage() {
         </div>
       </footer>
 
-      <AddScheduleModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
+      {isAddModalOpen && (
+        <AddScheduleModal 
+          isOpen={isAddModalOpen} 
+          onClose={() => setIsAddModalOpen(false)} 
+          initialDate={filterDate}
+        />
+      )}
 
       <DateSelectionModal
         isOpen={isDateModalOpen}

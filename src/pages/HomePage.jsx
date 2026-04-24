@@ -1,11 +1,13 @@
 import { useApp } from '../context/AppContext';
 import { format, parseISO } from 'date-fns';
+import { getFieldStatus } from '../utils/statusUtils';
 
 export function HomePage() {
-  const { fields, equipment, activities } = useApp();
+  const { fields, schedules, equipment, activities } = useApp();
 
   // Compute live stats
-  const activeFieldCount = fields.filter((f) => f.status === 'active').length;
+  const now = new Date();
+  const activeFieldCount = fields.filter((f) => getFieldStatus(f.id, schedules, now).status === 'active').length;
   const totalFieldCount = fields.length;
   const warningCount = equipment.filter((e) => e.connectionStatus !== 'connected').length;
   const allSensorsOk = warningCount === 0;

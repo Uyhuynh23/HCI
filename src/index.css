@@ -89,3 +89,19 @@ body {
 .body-style { font-size: 18px; font-weight: 400; }
 .body-medium-style { font-size: 18px; font-weight: 500; }
 .small-style { font-size: 16px; font-weight: 400; color: #495057; }
+
+@keyframes radar-sweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-radar-sweep {
+  animation: radar-sweep 4s linear infinite;
+  transform-origin: 0% 50%;
+}
+
+

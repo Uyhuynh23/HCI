@@ -163,7 +163,7 @@ export function EquipmentPage() {
             <div className="absolute w-[120px] h-[120px] rounded-full border border-blue-500/30 bg-blue-100/20"></div>
             
             {/* Radar Sweep Line */}
-            <div className="absolute top-1/2 left-1/2 w-[180px] h-[2px] bg-gradient-to-r from-[#1A73E8] to-transparent origin-left rotate-[130deg]"></div>
+            <div className="absolute top-1/2 left-1/2 w-[180px] h-[2.5px] bg-gradient-to-r from-[#1A73E8] to-transparent animate-radar-sweep shadow-[0_0_15px_rgba(26,115,232,0.4)]"></div>
 
             {/* Center Icon */}
             <div className="relative z-10 w-[60px] h-[60px] bg-[#d8e2ff] rounded-full flex items-center justify-center shadow-lg border-2 border-[#adc7ff]">

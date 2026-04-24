@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import { AddScheduleModal } from '../components/AddScheduleModal';
 import { playSuccessSound } from '../utils/audio';
 import { format } from 'date-fns';
+import { getFieldStatus } from '../utils/statusUtils';
 
 const SPORT_CONFIG = {
   Pickleball: { icon: 'mountain_steam', color: 'bg-blue-400', textColor: 'text-white', statusBorder: 'border-[#1a73e8]', statusBg: 'bg-[#d8e2ff]', statusText: 'text-[#1a73e8]' },
@@ -21,57 +22,21 @@ function formatTime(seconds) {
 export function FieldDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { fields, schedules, updateField, addActivity } = useApp();
+  const { fields, schedules, addSchedule, updateSchedule, addActivity } = useApp();
 
   const [isTurnOffModalOpen, setIsTurnOffModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [now, setNow] = useState(new Date());
 
-  const field = fields.find((f) => f.id === id);
-  const intervalRef = useRef(null);
-
-  // Live countdown timer
+  // Update "now" every second for the countdown
   useEffect(() => {
-    if (!field) return;
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
-    // Clear any existing interval
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-
-    if (field.status === 'active' && field.timeRemaining > 0) {
-      intervalRef.current = setInterval(() => {
-        const currentField = fields.find((f) => f.id === id);
-        if (!currentField || currentField.status !== 'active' || !currentField.timeRemaining || currentField.timeRemaining <= 0) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-          return;
-        }
-
-        const newTime = currentField.timeRemaining - 1;
-        if (newTime <= 0) {
-          // Timer reached zero
-          updateField(id, { status: 'idle', timeRemaining: null });
-          addActivity({
-            message: `Hết thời gian tại ${currentField.name}. Đèn đã tự động tắt.`,
-            type: 'warning',
-          });
-          playSuccessSound();
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        } else {
-          updateField(id, { timeRemaining: newTime });
-        }
-      }, 1000);
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [field?.status, field?.id]);
+  const fieldBase = fields.find((f) => f.id === id);
+  const currentStatus = getFieldStatus(id, schedules, now);
+  const field = fieldBase ? { ...fieldBase, ...currentStatus } : null;
 
   // Field not found
   if (!field) {
@@ -91,17 +56,41 @@ export function FieldDetailPage() {
   }
 
   const sportConfig = SPORT_CONFIG[field.sport] || SPORT_CONFIG['Pickleball'];
-  const today = format(new Date(), 'yyyy-MM-dd');
+  const todayStr = format(now, 'yyyy-MM-dd');
   const todaySchedules = schedules
-    .filter((s) => s.fieldId === field.id && s.date === today)
+    .filter((s) => s.fieldId === field.id && s.date === todayStr)
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-  // Current time for display
-  const now = new Date();
   const currentTime = format(now, 'HH:mm');
 
   const handleSportChange = (sport) => {
-    updateField(field.id, { sport, status: 'active', timeRemaining: 3600 });
+    if (field.activeSchedule) {
+      // Update existing schedule
+      updateSchedule(field.activeSchedule.id, { sport });
+    } else {
+      // Create new schedule for 1 hour from now
+      const startTime = format(now, 'HH:mm');
+      const endTime = format(new Date(now.getTime() + 60 * 60 * 1000), 'HH:mm');
+      
+      // Check for overlap before quick-adding
+      const overlapping = getOverlappingSchedule(field.id, todayStr, startTime, endTime, schedules);
+      if (overlapping) {
+        alert(`Không thể thay đổi! Trùng với lịch ${overlapping.sport} (${overlapping.startTime} - ${overlapping.endTime})`);
+        return;
+      }
+
+      addSchedule({
+        id: `sched-${Date.now()}`,
+        fieldId: field.id,
+        sport,
+        date: todayStr,
+        startTime,
+        endTime,
+        status: 'ongoing',
+        createdAt: new Date().toISOString()
+      });
+    }
+
     addActivity({
       message: `${field.name} đã chuyển sang chế độ ${sport}.`,
       type: 'info',
@@ -109,7 +98,11 @@ export function FieldDetailPage() {
   };
 
   const handleTurnOffLights = () => {
-    updateField(field.id, { status: 'idle', timeRemaining: null });
+    if (field.activeSchedule) {
+      // End the schedule by setting end time to now
+      updateSchedule(field.activeSchedule.id, { endTime: format(now, 'HH:mm'), status: 'completed' });
+    }
+    
     addActivity({
       message: `Đã tắt toàn bộ đèn tại ${field.name}.`,
       type: 'warning',
@@ -294,7 +287,14 @@ export function FieldDetailPage() {
       )}
 
       {/* Thêm Lịch Mới Modal */}
-      <AddScheduleModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
+      {isAddModalOpen && (
+        <AddScheduleModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          initialFieldId={field.id}
+          initialDate={now}
+        />
+      )}
 
     </div>
   );

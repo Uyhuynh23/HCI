@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import { useApp } from '../context/AppContext';
 import { DateSelectionModal } from './DateSelectionModal';
+import { getFieldStatus, getOverlappingSchedule } from '../utils/statusUtils';
 import { playSuccessSound } from '../utils/audio';
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
@@ -107,7 +108,7 @@ function LargeTimePicker({ value, onChange, label }) {
   );
 }
 
-export function AddScheduleModal({ isOpen, onClose }) {
+export function AddScheduleModal({ isOpen, onClose, initialFieldId, initialDate }) {
   const { fields, schedules, addSchedule, addActivity } = useApp();
 
   const [selectedSport, setSelectedSport] = useState('Pickleball');
@@ -125,13 +126,13 @@ export function AddScheduleModal({ isOpen, onClose }) {
   useEffect(() => {
     if (isOpen) {
       setSelectedSport('Pickleball');
-      setSelectedFieldId(fields.length > 0 ? fields[0].id : '');
-      setSelectedDate(new Date());
+      setSelectedFieldId(initialFieldId || (fields.length > 0 ? fields[0].id : ''));
+      setSelectedDate(initialDate || new Date());
       setStartTime('09:00');
       setEndTime('11:00');
       setValidationError('');
     }
-  }, [isOpen, fields]);
+  }, [isOpen, fields, initialFieldId, initialDate]);
 
   const dayNames = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
   const isToday = new Date().toDateString() === selectedDate.toDateString();
@@ -164,12 +165,7 @@ export function AddScheduleModal({ isOpen, onClose }) {
 
     // Check for overlapping schedules on the same field & date
     const dateStr = format(selectedDate, 'yyyy-MM-dd');
-    const overlapping = schedules.find((s) => {
-      if (s.fieldId !== selectedFieldId || s.date !== dateStr) return false;
-      const existStart = timeToMinutes(s.startTime);
-      const existEnd = timeToMinutes(s.endTime);
-      return startMin < existEnd && endMin > existStart;
-    });
+    const overlapping = getOverlappingSchedule(selectedFieldId, dateStr, startTime, endTime, schedules);
 
     if (overlapping) {
       setValidationError(`Trùng lịch! ${overlapping.sport} đã đặt từ ${overlapping.startTime} - ${overlapping.endTime}.`);
