@@ -51,7 +51,18 @@ export function generateSeedData() {
     return format(d, 'HH:mm');
   }
 
-  const schedules = [];
+  const schedules = [
+    {
+      id: 'sched-seed-1',
+      fieldId: 'field-2',
+      sport: 'Bóng chuyền',
+      date: today,
+      startTime: getTimeStr(-1),
+      endTime: getTimeStr(1),
+      status: 'ongoing',
+      createdAt: new Date().toISOString(),
+    }
+  ];
 
   const equipment = [
     {
