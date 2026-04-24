@@ -11,8 +11,8 @@ const SPORT_COLORS = {
   'Bóng chuyền': '#D9534F',
 };
 
-const GANTT_START_HOUR = 8;
-const GANTT_END_HOUR = 20; // 08:00 to 20:00 = 12 hours
+const GANTT_START_HOUR = 9;
+const GANTT_END_HOUR = 23; // 09:00 to 23:00 = 14 hours
 const GANTT_TOTAL_HOURS = GANTT_END_HOUR - GANTT_START_HOUR;
 const GANTT_TOTAL_MINUTES = GANTT_TOTAL_HOURS * 60;
 const SNAP_MINUTES = 15; // Snap to 15-min increments
@@ -267,7 +267,10 @@ export function SchedulePage() {
             onClick={() => { setShowSportDropdown(!showSportDropdown); setShowCourtDropdown(false); }}
             className="flex items-center gap-3 bg-[#e1e3e4] hover:bg-[#d9dadb] px-6 py-3.5 rounded-xl text-[18px] font-medium text-[#191C1D] active:scale-95 transition-all outline-none"
           >
-            <span className="material-symbols-outlined text-[#005bbf] text-[24px]">sports_tennis</span> 
+            {filterSport === 'Tất cả' && <span className="material-symbols-outlined text-[#005bbf] text-[24px]">category</span>}
+            {filterSport === 'Bóng chuyền' && <img src="/volleyball-1-svgrepo-com.svg" className="w-6 h-6 object-contain drop-shadow-sm" alt="Bóng chuyền" />}
+            {filterSport === 'Cầu lông' && <img src="/badminton-3-svgrepo-com.svg" className="w-6 h-6 object-contain drop-shadow-sm" alt="Cầu lông" />}
+            {filterSport === 'Pickleball' && <img src="/pickleball.png" className="w-6 h-6 object-contain drop-shadow-sm" alt="Pickleball" />}
             Môn: {filterSport}
           </button>
           {showSportDropdown && (
@@ -287,14 +290,14 @@ export function SchedulePage() {
       </section>
 
       {/* Gantt Chart Container */}
-      <section className="flex-1 px-8 pb-8 flex flex-col min-h-[500px]">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 flex-1 flex flex-col relative overflow-x-auto overflow-y-hidden">
-          <div className="min-w-[1200px]">
-            {/* Time Header */}
-            <div className={`grid bg-[#e7e8e9] border-b border-[#d9dadb]`} style={{ gridTemplateColumns: `140px repeat(${GANTT_TOTAL_HOURS}, 1fr)` }}>
-              <div className="p-6 border-r border-[#d9dadb] bg-[#e1e3e4] font-bold text-[18px] flex items-center justify-center text-[#191C1D]">Sân</div>
+      <section className="flex-1 px-8 pb-8 flex flex-col min-h-0">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 flex-1 flex flex-col relative overflow-x-auto overflow-y-auto max-h-[70vh]">
+          <div className="min-w-[1400px]">
+            {/* Time Header - sticky at top so it doesn't scroll away */}
+            <div className="grid bg-[#e7e8e9] border-b border-[#d9dadb] sticky top-0 z-20" style={{ gridTemplateColumns: `140px repeat(${GANTT_TOTAL_HOURS}, 1fr)` }}>
+              <div className="p-4 border-r border-[#d9dadb] bg-[#e1e3e4] font-bold text-[16px] flex items-center justify-center text-[#191C1D]">Sân</div>
               {timeHeaders.map((t) => (
-                <div key={t} className="p-6 text-center font-bold text-[18px] text-[#414754]">{t}</div>
+                <div key={t} className="p-4 text-center font-bold text-[16px] text-[#414754]">{t}</div>
               ))}
             </div>
 
@@ -308,10 +311,13 @@ export function SchedulePage() {
                   ))}
               </div>
 
-              {/* 'Now' Line */}
+              {/* 'Now' Line — position = sidebar(140px) + percentage of remaining width */}
               {showNowMarker && (
-                <div className="absolute top-0 bottom-0 w-[3px] bg-[#005bbf] z-20 pointer-events-none" style={{ left: `calc(140px + ${nowPercent}% * (100% - 140px) / 100)`, marginLeft: `${nowPercent * 0.01 * (100)}%` }}>
-                  <div className="absolute top-[-10px] left-[-36px] bg-[#005bbf] text-white text-[12px] py-1 px-3 rounded-full font-bold whitespace-nowrap z-30">
+                <div
+                  className="absolute top-0 bottom-0 w-[3px] bg-[#005bbf] z-20 pointer-events-none"
+                  style={{ left: `calc(140px + (100% - 140px) * ${nowPercent / 100})` }}
+                >
+                  <div className="absolute top-[-10px] left-1/2 -translate-x-1/2 bg-[#005bbf] text-white text-[12px] py-1 px-3 rounded-full font-bold whitespace-nowrap z-30">
                     BÂY GIỜ
                   </div>
                 </div>
@@ -324,7 +330,7 @@ export function SchedulePage() {
 
                 return (
                   <div key={field.id} className={`min-h-[120px] ${rowIdx < displayFields.length - 1 ? 'border-b border-[#e1e3e4]' : ''}`} style={{ display: 'grid', gridTemplateColumns: '140px 1fr' }}>
-                    <div className="p-6 border-r border-[#e1e3e4] flex items-center justify-center bg-[#f3f4f5] font-bold text-[22px] text-[#191C1D] z-10">{field.name}</div>
+                    <div className="p-6 border-r border-[#e1e3e4] flex items-center justify-center bg-[#f3f4f5] font-bold text-[22px] text-[#191C1D] sticky left-0 z-10">{field.name}</div>
                     <div ref={rowIdx === 0 ? measureContainer : undefined} className="relative p-4 flex items-center w-full">
                       {fieldSchedules.map((schedule) => {
                         const left = timeToPercent(schedule.startTime);

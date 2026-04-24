@@ -122,9 +122,11 @@ export function AddScheduleModal({ isOpen, onClose, initialFieldId, initialDate 
   const [endTime, setEndTime] = useState('11:00');
   const [validationError, setValidationError] = useState('');
 
+  const prevIsOpen = useRef(false);
+
   // Reset form when opened
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !prevIsOpen.current) {
       setSelectedSport('Pickleball');
       setSelectedFieldId(initialFieldId || (fields.length > 0 ? fields[0].id : ''));
       setSelectedDate(initialDate || new Date());
@@ -132,6 +134,7 @@ export function AddScheduleModal({ isOpen, onClose, initialFieldId, initialDate 
       setEndTime('11:00');
       setValidationError('');
     }
+    prevIsOpen.current = isOpen;
   }, [isOpen, fields, initialFieldId, initialDate]);
 
   const dayNames = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
@@ -250,7 +253,7 @@ export function AddScheduleModal({ isOpen, onClose, initialFieldId, initialDate 
 
               <button type="button" onClick={() => setSelectedSport('Bóng chuyền')} className={`group flex items-center p-6 bg-white rounded-xl shadow-sm relative overflow-hidden border-l-[12px] active:scale-[0.98] transition-all text-left outline-none ${selectedSport === 'Bóng chuyền' ? 'border-[#ab3231] ring-2 ring-[#ab3231]' : 'border-[#ab3231]'}`}>
                 <div className="w-14 h-14 rounded-full bg-[#ab3231]/10 flex items-center justify-center mr-6 shrink-0">
-                  <span className="material-symbols-outlined text-[#ab3231] text-[32px]" style={{ fontVariationSettings: "'FILL' 1" }}>sports_volleyball</span>
+                  <img src="/volleyball-1-svgrepo-com.svg" className="w-8 h-8 object-contain" alt="Volleyball" />
                 </div>
                 <div className="flex flex-col flex-1">
                   <span className="font-headline text-[18px] font-bold text-[#191c1d]">Bóng chuyền</span>
@@ -267,7 +270,7 @@ export function AddScheduleModal({ isOpen, onClose, initialFieldId, initialDate 
 
               <button type="button" onClick={() => setSelectedSport('Cầu lông')} className={`group flex items-center p-6 bg-white rounded-xl shadow-sm relative overflow-hidden border-l-[12px] active:scale-[0.98] transition-all text-left outline-none ${selectedSport === 'Cầu lông' ? 'border-[#006a6a] ring-2 ring-[#006a6a]' : 'border-[#006a6a]'}`}>
                 <div className="w-14 h-14 rounded-full bg-[#006a6a]/10 flex items-center justify-center mr-6 shrink-0">
-                  <span className="material-symbols-outlined text-[#006a6a] text-[32px]" style={{ fontVariationSettings: "'FILL' 1" }}>sports_tennis</span>
+                  <img src="/badminton-3-svgrepo-com.svg" className="w-8 h-8 object-contain" alt="Badminton" />
                 </div>
                 <div className="flex flex-col flex-1">
                   <span className="font-headline text-[18px] font-bold text-[#191c1d]">Cầu lông</span>
@@ -284,7 +287,7 @@ export function AddScheduleModal({ isOpen, onClose, initialFieldId, initialDate 
 
               <button type="button" onClick={() => setSelectedSport('Pickleball')} className={`group flex items-center p-6 bg-white rounded-xl shadow-sm relative overflow-hidden border-l-[12px] active:scale-[0.98] transition-all text-left outline-none ${selectedSport === 'Pickleball' ? 'border-[#1a73e8] ring-2 ring-[#1a73e8]' : 'border-[#1a73e8]'}`}>
                 <div className="w-14 h-14 rounded-full bg-[#1A73E8]/10 flex items-center justify-center mr-6 shrink-0">
-                  <span className="material-symbols-outlined text-[#1a73e8] text-[32px]" style={{ fontVariationSettings: "'FILL' 1" }}>sports_handball</span>
+                  <img src="/pickleball.png" className="w-8 h-8 object-contain" alt="Pickleball" />
                 </div>
                 <div className="flex flex-col flex-1">
                   <span className="font-headline text-[18px] font-bold text-[#191c1d]">Pickleball</span>

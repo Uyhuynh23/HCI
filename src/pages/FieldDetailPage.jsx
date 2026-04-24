@@ -7,9 +7,9 @@ import { format } from 'date-fns';
 import { getFieldStatus } from '../utils/statusUtils';
 
 const SPORT_CONFIG = {
-  Pickleball: { icon: 'mountain_steam', color: 'bg-blue-400', textColor: 'text-white', statusBorder: 'border-[#1a73e8]', statusBg: 'bg-[#d8e2ff]', statusText: 'text-[#1a73e8]' },
-  'Cầu lông': { icon: 'sports_tennis', color: 'bg-[#006e25]', textColor: 'text-white', statusBorder: 'border-[#006e25]', statusBg: 'bg-[#dcfce7]', statusText: 'text-[#006e25]' },
-  'Bóng chuyền': { icon: 'sports_volleyball', color: 'bg-[#d9534f]', textColor: 'text-white', statusBorder: 'border-[#d9534f]', statusBg: 'bg-[#ffdad7]', statusText: 'text-[#d9534f]' },
+  Pickleball: { icon: '/pickleball.png', isImage: true, color: 'bg-blue-400', textColor: 'text-white', statusBorder: 'border-[#1a73e8]', statusBg: 'bg-[#d8e2ff]', statusText: 'text-[#1a73e8]' },
+  'Cầu lông': { icon: '/badminton-3-svgrepo-com.svg', isImage: true, color: 'bg-[#006e25]', textColor: 'text-white', statusBorder: 'border-[#006e25]', statusBg: 'bg-[#dcfce7]', statusText: 'text-[#006e25]' },
+  'Bóng chuyền': { icon: '/volleyball-1-svgrepo-com.svg', isImage: true, color: 'bg-[#d9534f]', textColor: 'text-white', statusBorder: 'border-[#d9534f]', statusBg: 'bg-[#ffdad7]', statusText: 'text-[#d9534f]' },
 };
 
 function formatTime(seconds) {
@@ -71,7 +71,7 @@ export function FieldDetailPage() {
       // Create new schedule for 1 hour from now
       const startTime = format(now, 'HH:mm');
       const endTime = format(new Date(now.getTime() + 60 * 60 * 1000), 'HH:mm');
-      
+
       // Check for overlap before quick-adding
       const overlapping = getOverlappingSchedule(field.id, todayStr, startTime, endTime, schedules);
       if (overlapping) {
@@ -102,7 +102,7 @@ export function FieldDetailPage() {
       // End the schedule by setting end time to now
       updateSchedule(field.activeSchedule.id, { endTime: format(now, 'HH:mm'), status: 'completed' });
     }
-    
+
     addActivity({
       message: `Đã tắt toàn bộ đèn tại ${field.name}.`,
       type: 'warning',
@@ -128,13 +128,13 @@ export function FieldDetailPage() {
       {/* TopNavBar */}
       <header className="sticky top-0 w-full h-20 flex justify-between items-center px-10 z-30 bg-slate-50/85 backdrop-blur-md shadow-sm shrink-0">
         <div className="flex items-center gap-4">
-           <button 
-             onClick={() => navigate('/fields')} 
-             className="hover:bg-slate-200 rounded-full p-2 transition-colors flex items-center justify-center active:scale-95"
-           >
-             <span className="material-symbols-outlined text-slate-700">arrow_back</span>
-           </button>
-           <h2 className="text-[32px] font-bold uppercase text-slate-900 leading-[1.2]">QUẢN LÝ {field.name.toUpperCase()}</h2>
+          <button
+            onClick={() => navigate('/fields')}
+            className="hover:bg-slate-200 rounded-full p-2 transition-colors flex items-center justify-center active:scale-95"
+          >
+            <span className="material-symbols-outlined text-slate-700">arrow_back</span>
+          </button>
+          <h2 className="text-[32px] font-bold uppercase text-slate-900 leading-[1.2]">QUẢN LÝ {field.name.toUpperCase()}</h2>
         </div>
         <div className="flex items-center gap-6">
           <button className="hover:bg-slate-200 rounded-full p-2 transition-colors duration-300 ease-in-out active:scale-95">
@@ -149,11 +149,15 @@ export function FieldDetailPage() {
       <div className="p-10 grid grid-cols-10 gap-8 min-h-[1024px]">
         {/* Left Column (60%) */}
         <section className="col-span-6 flex flex-col gap-8">
-          
+
           {/* Status Card */}
           <div className={`bg-white p-10 rounded-[2rem] shadow-sm flex items-center gap-8 border-l-[12px] ${sportConfig.statusBorder}`}>
             <div className={`${sportConfig.statusBg} w-24 h-24 rounded-2xl flex items-center justify-center ${sportConfig.statusText} shrink-0`}>
-              <span className="material-symbols-outlined text-[60px]" style={{ fontVariationSettings: "'FILL' 1" }}>{sportConfig.icon}</span>
+              {sportConfig.isImage ? (
+                <img src={sportConfig.icon} alt={field.sport} className="w-14 h-14 object-contain drop-shadow-sm" />
+              ) : (
+                <span className="material-symbols-outlined text-[60px]" style={{ fontVariationSettings: "'FILL' 1" }}>{sportConfig.icon}</span>
+              )}
             </div>
             <div className="flex-1 flex flex-col">
               <h3 className="text-[16px] font-bold text-slate-500 tracking-widest uppercase mb-1">{field.name.toUpperCase()}</h3>
@@ -171,37 +175,37 @@ export function FieldDetailPage() {
           <div className="flex flex-col gap-6">
             <h3 className="text-[24px] font-bold text-[#212529] px-2">Thay đổi nhanh</h3>
             <div className="grid grid-cols-3 gap-4">
-               <button 
-                 onClick={() => handleSportChange('Bóng chuyền')}
-                 className={`p-6 rounded-2xl flex flex-col items-center justify-center gap-4 h-48 shadow-lg active:scale-95 transition-transform text-white font-bold text-[20px] ${field.sport === 'Bóng chuyền' ? 'bg-[#d9534f] ring-4 ring-[#d9534f]/40' : 'bg-[#d9534f]'}`}
-               >
-                  <span className="material-symbols-outlined text-[48px]" style={{ fontVariationSettings: "'FILL' 1" }}>sports_volleyball</span>
-                  <span>Bóng chuyền</span>
-               </button>
-               <button 
-                 onClick={() => handleSportChange('Cầu lông')}
-                 className={`p-6 rounded-2xl flex flex-col items-center justify-center gap-4 h-48 shadow-lg active:scale-95 transition-transform text-white font-bold text-[20px] ${field.sport === 'Cầu lông' ? 'bg-[#006e25] ring-4 ring-[#006e25]/40' : 'bg-[#006e25]'}`}
-               >
-                  <span className="material-symbols-outlined text-[48px]" style={{ fontVariationSettings: "'FILL' 1" }}>sports_tennis</span>
-                  <span className="text-center leading-tight">Cầu lông</span>
-               </button>
-               <button 
-                 onClick={() => handleSportChange('Pickleball')}
-                 className={`p-6 rounded-2xl flex flex-col items-center justify-center gap-4 h-48 shadow-lg active:scale-95 transition-transform text-white font-bold text-[20px] ${field.sport === 'Pickleball' ? 'bg-blue-400 ring-4 ring-blue-400/40' : 'bg-blue-400'}`}
-               >
-                  <span className="material-symbols-outlined text-[48px]" style={{ fontVariationSettings: "'FILL' 1" }}>mountain_steam</span>
-                  <span className="text-center leading-tight">Pickleball</span>
-               </button>
+              <button
+                onClick={() => handleSportChange('Bóng chuyền')}
+                className={`p-6 rounded-[2.5rem] flex flex-col items-center justify-center gap-4 h-72 shadow-xl active:scale-95 transition-all duration-300 text-white font-bold text-[22px] hover:shadow-2xl hover:brightness-110 ${field.sport === 'Bóng chuyền' ? 'bg-[#d9534f] ring-6 ring-[#d9534f]/40 scale-[1.05]' : 'bg-[#d9534f]'}`}
+              >
+                <img src="/volleyball-1-svgrepo-com.svg" className="w-24 h-24 object-contain drop-shadow-lg" alt="Volleyball" />
+                <span className="mt-2 tracking-tight">Bóng chuyền</span>
+              </button>
+              <button
+                onClick={() => handleSportChange('Cầu lông')}
+                className={`p-6 rounded-[2.5rem] flex flex-col items-center justify-center gap-4 h-72 shadow-xl active:scale-95 transition-all duration-300 text-white font-bold text-[22px] hover:shadow-2xl hover:brightness-110 ${field.sport === 'Cầu lông' ? 'bg-[#006e25] ring-6 ring-[#006e25]/40 scale-[1.05]' : 'bg-[#006e25]'}`}
+              >
+                <img src="/badminton-3-svgrepo-com.svg" className="w-24 h-24 object-contain drop-shadow-lg" alt="Badminton" />
+                <span className="text-center leading-tight mt-2 tracking-tight">Cầu lông</span>
+              </button>
+              <button
+                onClick={() => handleSportChange('Pickleball')}
+                className={`p-6 rounded-[2.5rem] flex flex-col items-center justify-center gap-4 h-72 shadow-xl active:scale-95 transition-all duration-300 text-white font-bold text-[22px] hover:shadow-2xl hover:brightness-110 ${field.sport === 'Pickleball' ? 'bg-blue-400 ring-6 ring-blue-400/40 scale-[1.05]' : 'bg-blue-400'}`}
+              >
+                <img src="/pickleball.png" className="w-24 h-24 object-contain drop-shadow-lg" alt="Pickleball" />
+                <span className="text-center leading-tight mt-2 tracking-tight">Pickleball</span>
+              </button>
             </div>
           </div>
 
           {/* Turn Off All */}
           <div className="mt-8 flex justify-center">
             <button onClick={() => setIsTurnOffModalOpen(true)} className="w-fit px-10 bg-[#ba1a1a] rounded-2xl flex items-center justify-center gap-4 active:scale-[0.98] transition-transform shadow-xl text-white h-16 border-none">
-               <div className="flex items-center gap-6">
-                 <span className="material-symbols-outlined text-[24px]" style={{ fontWeight: 300 }}>power_settings_new</span>
-                 <span className="font-bold uppercase tracking-tight text-[20px]">TẮT TOÀN BỘ ĐÈN</span>
-               </div>
+              <div className="flex items-center gap-6">
+                <span className="material-symbols-outlined text-[24px]" style={{ fontWeight: 300 }}>power_settings_new</span>
+                <span className="font-bold uppercase tracking-tight text-[20px]">TẮT TOÀN BỘ ĐÈN</span>
+              </div>
             </button>
           </div>
 
@@ -214,15 +218,13 @@ export function FieldDetailPage() {
             {todaySchedules.map((schedule) => {
               const status = getScheduleStatus(schedule);
               return (
-                <div 
-                  key={schedule.id} 
-                  className={`bg-white p-6 rounded-2xl flex items-start gap-5 shadow-sm ${
-                    status === 'completed' ? 'opacity-60' : status === 'upcoming' ? 'opacity-80' : ''
-                  }`}
+                <div
+                  key={schedule.id}
+                  className={`bg-white p-6 rounded-2xl flex items-start gap-5 shadow-sm ${status === 'completed' ? 'opacity-60' : status === 'upcoming' ? 'opacity-80' : ''
+                    }`}
                 >
-                  <div className={`font-bold py-2 px-3 rounded-xl text-[16px] whitespace-nowrap ${
-                    status === 'ongoing' ? 'bg-[#d8e2ff] text-[#1a73e8]' : 'bg-[#e0e3e8] text-[#414754]'
-                  }`}>
+                  <div className={`font-bold py-2 px-3 rounded-xl text-[16px] whitespace-nowrap ${status === 'ongoing' ? 'bg-[#d8e2ff] text-[#1a73e8]' : 'bg-[#e0e3e8] text-[#414754]'
+                    }`}>
                     {schedule.startTime} - {schedule.endTime}
                   </div>
                   <div className="flex-1">
@@ -248,7 +250,7 @@ export function FieldDetailPage() {
               </div>
             )}
           </div>
-          
+
           <button onClick={() => setIsAddModalOpen(true)} className="mt-8 bg-[#1a73e8] text-white h-20 rounded-2xl font-bold text-[20px] flex items-center justify-center gap-3 shadow-[0_12px_24px_rgba(26,115,232,0.3)] active:scale-95 transition-all w-full border-none">
             <span className="material-symbols-outlined text-[28px]">add_circle</span>ĐẶT SÂN
           </button>
@@ -257,10 +259,10 @@ export function FieldDetailPage() {
 
       {/* FAB */}
       <div className="fixed bottom-10 right-10 flex flex-col items-end gap-4 z-50 pointer-events-none">
-         <button className="bg-[#1a73e8] w-20 h-20 rounded-full flex items-center justify-center text-white shadow-2xl hover:scale-105 active:scale-95 transition-all group relative pointer-events-auto border-none">
-            <span className="material-symbols-outlined text-[40px]">support_agent</span>
-            <span className="absolute right-24 bg-[#212529] text-white px-4 py-2 rounded-xl text-[16px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Hỗ trợ khẩn cấp</span>
-         </button>
+        <button className="bg-[#1a73e8] w-20 h-20 rounded-full flex items-center justify-center text-white shadow-2xl hover:scale-105 active:scale-95 transition-all group relative pointer-events-auto border-none">
+          <span className="material-symbols-outlined text-[40px]">support_agent</span>
+          <span className="absolute right-24 bg-[#212529] text-white px-4 py-2 rounded-xl text-[16px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Hỗ trợ khẩn cấp</span>
+        </button>
       </div>
 
       {/* Tắt Toàn Bộ Đèn Modal */}
@@ -270,7 +272,7 @@ export function FieldDetailPage() {
             <div className="w-24 h-24 bg-[#ffdad6] rounded-full flex items-center justify-center mb-6">
               <span className="material-symbols-outlined text-[64px] text-[#ba1a1a]" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
             </div>
-            <h2 className="text-[28px] font-black text-[#101828] leading-[1.2] uppercase mb-4 tracking-tight">XÁC NHẬN TẮT<br/>TOÀN BỘ ĐÈN?</h2>
+            <h2 className="text-[28px] font-black text-[#101828] leading-[1.2] uppercase mb-4 tracking-tight">XÁC NHẬN TẮT<br />TOÀN BỘ ĐÈN?</h2>
             <p className="text-[16px] text-slate-500 mb-8 leading-normal font-medium">
               Bạn có chắc chắn muốn tắt toàn bộ hệ thống đèn tại {field.name} không? Hành động này sẽ dừng tất cả các trận đấu đang diễn ra.
             </p>

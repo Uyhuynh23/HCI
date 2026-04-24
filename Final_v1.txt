@@ -1,0 +1,336 @@
+﻿1. INTRODUCTION
+1.1. Purpose of the Evaluation
+The objective of this study is to conduct a Summative Evaluation of the Kinetic Grid High-Fidelity (Hi-fi) prototype. Following the iterative design process, this phase aims to validate whether the digital solution successfully addresses the usability gaps identified in the low-fidelity (Lo-fi) stage. The evaluation focuses on measuring operational efficiency, the effectiveness of error prevention mechanisms, and overall user satisfaction across a diverse demographic of facility operators.
+1.2. Scope of Evaluation
+The evaluation encompasses a comprehensive assessment of the end-to-end management workflow, testing the following five core modules:
+* Intelligent Dashboard: High-level status monitoring and activity tracking.
+* Integrated Connectivity: Hardware discovery and batch pairing via Radar.
+* Facility Overview: Multi-criteria court filtering and searching.
+* Granular Court Details: Real-time session control and safety management.
+* Strategic Scheduler: Resource allocation using a Gantt-style interface.
+________________
+2. STUDY DESIGN AND EVALUATION PLANNING
+2.1. Participant Profiles (Grouped by Background)
+To ensure statistical diversity and evaluate the system across different mental models, six participants were recruited and categorized into three distinct groups:
+* Group 1: Power Users (High Technical Proficiency / High Domain Knowledge)
+   * Phát (20): Part-time sports center staff. Extremely tech-savvy; prioritizes rapid execution and high-efficiency shortcuts.
+   * Anh Uy (35): F&B Manager and sports enthusiast. Expert in complex POS systems; highly critical of workflow logic and system throughput.
+* Group 2: Moderate Users (Tech-Literate / Low Domain Knowledge)
+   * Mẹ Hân (48): Housewife assisting in management. Background in accounting; proficient in Excel and basic social media (Zalo, YouTube). Values data precision over aesthetics.
+   * Chị Uy (21): Student. Proficient in general technology but has zero knowledge of sports rules or terminology. Relies strictly on visual affordances and iconography.
+* Group 3: Novice Users (Low Technical Proficiency / Low Domain Knowledge)
+   * Mợ Út (50): Traditional court owner. Transitioning from manual paper-based tracking; hesitant and fearful of "breaking" digital systems.
+   * Má Uy (52): Housewife. Uses only basic communication apps; no interest in sports. Requires a simplified, self-explanatory UI with minimal cognitive load.
+2.2. Team Roles & Responsibilities
+To ensure a structured and objective evaluation process, roles were assigned as follows:
+Role
+	Responsibility
+	Team Member
+	Facilitator
+	Leads the session, provides instructions, and prompts "Thinking Aloud."
+	Huỳnh Trấn Uy
+	Observer 1
+	Records Time on Task (ToT) and identifies critical interaction incidents.
+	Trần Mỹ An
+	Observer 2
+	Monitors and counts Error Rates (misclicks/navigation slips).
+	Nguyễn Hoàng Gia Hân
+	Technical Support
+	Manages the Figma prototype and ensures recording stability.
+	Hồ Lâm Ngọc Bảo
+	Moderator
+	Conducts Pre/Post-test interviews and manages questionnaires.
+	Phạm Bảo Kha
+	2.3. Research Methodology & Measures
+The study utilizes a Within-Subjects Design, where every participant interacts with all system modules to provide a comparative analysis of cross-demographic behavior.
+Quantitative Measures:
+* Time on Task (ToT): Duration in seconds from task initiation to completion.
+* Error Rate: Frequency of "slips" (accidental clicks) or "mistakes" (incorrect mental models).
+* Task Completion Rate: Percentage of tasks completed (Independent vs. Assisted).
+Qualitative Measures:
+* Thinking Aloud Protocol: Real-time verbalization of thoughts and frustrations during interaction.
+* Post-test Debriefing: Semi-structured interviews to capture emotional responses and overall perceived satisfaction.
+2.4. Task Scenarios
+The tasks represent the core operational flow of the system, addressing issues identified during the Lo-fi phase:
+* Task 1: System Initialization. "The facility has just opened. Use the app to discover and connect all 24 laser projectors simultaneously."
+* Task 2: Resource Discovery. "A customer calls to ask for an available Badminton court. Use the filters to find an empty slot as quickly as possible."
+* Task 3: Live Operation. "Court 2 is currently active. Access the court details to check the remaining time, adjust the laser intensity, and book a future session for this specific court."
+* Task 4: Strategic Scheduling. "Customer Nguyễn Văn A wants to book a court at 19:00. Use the Scheduler to verify availability and confirm the booking."
+2.5. Performance Thresholds
+Success is measured against the following pre-defined thresholds:
+Task
+	Description
+	Good (Success)
+	Acceptable
+	Bad (Failure)
+	Task 1
+	Connect 24 Devices
+	< 10 seconds
+	10s - 20s
+	> 20s / System Error
+	Task 2
+	Find Idle Court
+	< 15 seconds
+	15s - 30s
+	> 35s / Misclick
+	Task 3
+	Granular Control
+	< 30 seconds
+	30s - 60s
+	> 60s / Safety Slip
+	Task 4
+	Strategic Scheduling
+	< 30 seconds
+	30s - 60s
+	> 60s / Data Error
+	2.6. Evaluation Procedure
+The study follows a standardized 6-step workflow:
+1. Briefing: A casual introduction. Users are informed that the system is being tested, not their ability.
+2. Pre-Questionnaire: Collection of demographic data and technology habits.
+3. Introduction: Brief overview of Kinetic Grid. Briefing depth is adjusted by group (Novices receive more conceptual detail; Power Users receive only a high-level summary).
+4. Execution: Participants perform the 4 tasks while being recorded. Facilitator prompts "Thinking Aloud."
+5. Post-Questionnaire: Completion of the PUEU (Perceived Usefulness and Ease of Use) survey.
+6. Debriefing: Discussion of specific pain points or "critical incidents" observed during the session.
+________________
+3. DETAILED TASK-BY-TASK ANALYSIS
+This chapter presents the findings from the usability testing sessions conducted with six participants. The analysis correlates measured performance metrics (Quantitative) with behavioral observations and cognitive feedback (Qualitative) for each individual.
+3.1. Task 1: System Initialization
+* Scenario: "The facility has just opened. Use the application to discover and connect all 24 laser projectors across all courts simultaneously."
+* HCI Objectives: Evaluate the "Connect All" (Batch Action) feature and the visibility of system status.
+3.1.1. Quantitative Measures
+Participant
+	Time on Task (ToT)
+	Errors
+	Status
+	Assessment
+	Phát (Expert)
+	4s
+	0
+	Independent
+	Excellent
+	Anh Uy (Expert)
+	7s
+	1 (Slip)
+	Independent
+	Good
+	Mẹ Hân (Moderate)
+	10s
+	0
+	Independent
+	Good
+	Chị Uy (Moderate)
+	12s
+	0
+	Independent
+	Good
+	Mợ Út (Novice)
+	16s
+	0
+	Independent
+	Acceptable
+	Má Uy (Novice)
+	22s
+	1 (Mistake)
+	Assisted
+	Acceptable
+	3.1.2. Qualitative Insights
+* Behavioral Observations:
+   * Phát performed exceptionally fast due to strong recognition of action affordances.
+   * Anh Uy, despite his technical proficiency, committed a "Slip" (clicking an individual device icon on the radar instead of the master button) due to excessive speed.
+   * Mợ Út (Novice) performed better than expected; she noted that the rotating radar was "pleasant to watch" and the "Connect All" button appeared clearly, giving her the confidence to click without fear of error.
+* User Feedback:
+   * Má Uy (Novice): "The machines are right in front of me, so why do we need a radar to find them?" (This highlights a mental model gap regarding the backend discovery process).
+   * Phát (Expert): "It’s satisfying to see the whole system wake up in one tap; it's much more efficient than manually checking every single court connection."
+3.1.3. General Assessment
+The "Connect All" feature is highly effective in eliminating interaction fatigue. However, for Novice users, adding a clearer textual status during the radar scan could further reduce technical ambiguity.
+________________
+3.2. Task 2: [a]Resource Discovery (Idle Court Search)
+* Scenario: "A customer has just arrived. Find any idle court as quickly as possible to prepare for their session." 
+* HCI Objectives: Evaluate court status recognition via color-coding and the efficiency of the "Swipe" interaction versus "Filtering."
+3.2.1. Quantitative Measures
+Participant
+	Time on Task (ToT)
+	Errors
+	Status
+	Assessment
+	Anh Uy (Expert)
+	3s
+	0
+	Independent
+	Excellent
+	Phát (Expert)
+	5s
+	1 (Slip)
+	Independent
+	Good
+	Mợ Út (Novice)
+	14s
+	0
+	Independent
+	Excellent
+	Mẹ Hân (Moderate)
+	9s
+	0
+	Independent
+	Good
+	Chị Uy (Moderate)
+	15s
+	2 (Mistake)
+	Independent
+	Acceptable
+	Má Uy (Novice)
+	28s
+	1 (Mistake)
+	Assisted
+	Acceptable
+	3.2.2. Qualitative Insights 
+* Behavioral Observations:
+   * Mợ Út completed this task surprisingly fast (14s), rivaling the Expert group. She relied entirely on color-coding (Green =[b] Idle), simply swiping through the list and tapping the first green court she saw without using the search bar.
+   * Phát committed a "Slip" by hastily tapping an active court (Red) located immediately adjacent to an idle one.
+* User Feedback: 
+   * Anh Uy (Expert): "This system is great because an idle court can be transformed into any sport. I don't have to hunt for a specific court type, which makes coordination much more flexible."
+   * Mợ Út (Novice): "The green squares stand out so clearly. I just swiped up and knew exactly where the empty spots were without needing to read the small text."
+3.2.3. General Assessment
+The interface achieves an impressive level of Recognition over Recall through its intuitive color system. The swiping interaction felt natural across all user groups, while the search/filter features successfully provided peak efficiency for Power Users.
+________________
+3.3. Task 3: Granular Control & Safety
+7. Scenario: "Court 2 is currently active. Check the remaining time, adjust the laser intensity [c]to meet the customer's request, and prepare to book a new future session for this court."
+8. HCI Objectives: Validate error prevention for the "Kill Switch" and the utility of the Countdown Timer.
+3.3.1. Quantitative Measures
+Participant
+	Time on Task (ToT)
+	Errors
+	Status
+	Assessment
+	Anh Uy (Expert)
+	10s
+	0
+	Independent
+	Excellent
+	Phát (Expert)
+	12s
+	1 (Slip)
+	Independent
+	Good
+	Mẹ Hân (Moderate)
+	18s
+	0
+	Independent
+	Good
+	Chị Uy (Moderate)
+	22s
+	0
+	Independent
+	Good
+	Mợ Út (Novice)
+	40s
+	0
+	Independent
+	Acceptable
+	Má Uy (Novice)
+	55s
+	1 (Slip)
+	Assisted
+	Poor
+	3.3.2. Qualitative Insights
+* Behavioral Observations:
+   * Má Uy nearly touched the "Kill Switch" while attempting to adjust the intensity slider due to limited finger dexterity. However, because the button was resized and isolated, she paused upon seeing the red warning color.[d]
+   * Mẹ Hân focused heavily on the Countdown Timer. With her accounting background, she was highly satisfied with the transparency of managing session times.
+* User Feedback:
+   *  Phát (Expert): "I misclicked the court graphic instead of the 'Settings' button. The hitboxes for sliders and buttons should be slightly larger for faster, more rugged interaction."
+   * Mẹ Hân (Moderate): "The countdown timer adds a layer of professionalism. It removes the guesswork and makes things transparent for both the staff and the customers."
+3.3.3. General Assessment
+The safety-first design approach was validated. Resizing and isolating the Kill Switch successfully prevented critical operational errors. However, the ergonomics of the sliders should be refined for the Novice group to ensure easier manipulation.
+________________
+3.4. Task 4: [e]Strategic Scheduling
+* Scenario: "Verify if the booking for 'Nguyễn Văn A' at 19:00 overlaps with any other sessions using the Gantt chart."
+* HCI Objectives: Evaluate the spatial mental model of time via the Gantt interface.
+3.4.1. Quantitative Measures
+Participant
+	Time on Task (ToT)
+	Errors
+	Status
+	Assessment
+	Mẹ Hân (Moderate)
+	12s
+	0
+	Independent
+	Excellent
+	Anh Uy (Expert)
+	15s
+	0
+	Independent
+	Excellent
+	Phát (Expert)
+	14s
+	0
+	Independent
+	Excellent
+	Chị Uy (Moderate)
+	25s
+	1 (Mistake)
+	Independent
+	Acceptable
+	Mợ Út (Novice)
+	50s
+	2 (Mistake)
+	Assisted
+	Poor
+	Má Uy (Novice)
+	65s
+	3 (Mistake)
+	Assisted
+	Poor
+	3.4.2. Qualitative Insights
+* Behavioral Observations:
+   * Mẹ Hân was the top performer for this task, even surpassing the Power Users. Her extensive experience with Excel spreadsheets made the Gantt chart feel logical and familiar.
+   * Mợ Út and Má Uy struggled with visual density. Both users had to physically point their fingers at the screen to track rows from court names to time columns[f].
+* User Feedback: 
+   * Chị Uy (Moderate): "The schedule looks very professional, but for someone who doesn't know sports well, these colored blocks should have text labels to make them easier to distinguish at a glance."[g]
+   * Anh Uy (Expert): "The red 'Now' indicator is perfect for peak hours. I can spot overlapping schedules in a split second, which is critical during busy shifts."[h]
+3.4.3. General Assessment
+The Gantt chart provides an excellent overview for professional managers and users comfortable with data visualization. However, it presents an accessibility barrier for elderly users, necessitating improvements such as larger font sizes or a simplified view toggle.
+________________
+4. DISCUSSION & DESIGN RECOMMENDATIONS
+Based on the detailed analysis from the testing phase, this chapter synthesizes core strengths and remaining experience barriers, proposing specific enhancements for the next iteration.
+4.1. Major Successes
+* Efficiency through Automation (Task 1): The "Connect All" feature represents a significant leap from the Lo-fi version. It not only allows Power Users (Phát, Anh Uy) to achieve peak efficiency but also helps Novice users (Mợ Út) overcome the psychological barrier of interacting with multiple hardware devices simultaneously.
+* Safety by Design (Task 3)[i]: The application of Defensive Design principles by resizing and isolating the "Kill Switch" button has proven highly effective. This is a critical success in preventing fatal errors among users with limited manual dexterity (Má Uy).
+* Recognition over Recall (Task 2): The Semantic Color-coding system demonstrated its effectiveness by enabling users unfamiliar with sports (Chị Uy) or technology (Mợ Út) to make accurate decisions based on visual intuition without needing to process excessive text.
+* Thêm task 4[j]
+4.2. Identified Usability Issues
+* Visual Overload in Scheduling (Task 4): The information density on the Gantt chart remains too high for elderly users. The absence of text labels on color blocks made it difficult for users with low domain knowledge (Chị Uy) to interpret the data effectively.
+* Accessibility & Ergonomics (Task 3): Fine-grained interaction components, such as sliders, have hitboxes that are too small, leading to "slips" for both high-speed users (Phát) and those with lower motor precision (Má Uy).
+* Mental Model Mismatch (Task 1): The technical term "Radar" created ambiguity for traditional users (Má Uy), leading to delays in understanding the system initialization process.
+4.3. Actionable Recommendations
+To further optimize the Kinetic Grid system, the following three groups of improvements are proposed:
+* Visual Enhancements:
+   * Increase the font size on the Scheduler's timeline by at least 20%.
+   * Incorporate sport labels (Text labels) directly onto the colored blocks in the schedule to support users with low domain knowledge.
+* Interaction Optimization:
+   * Expand the Hitbox for settings buttons [k]and light intensity sliders.
+   * Integrate a Zoom-in feature for the Gantt chart or provide a "Simplified View" (list format) for Novice users.
+* Error & Guidance Refinement:
+   * Implement a two-step Confirmation Dialog for the Kill Switch to ensure absolute operational safety.
+   * Update the terminology from "Radar" to "Scanning for Devices" to better align with everyday language and user mental models.
+________________
+5. CONCLUSION
+The Summative Evaluation of the Kinetic Grid system has provided empirical evidence of the project's operational viability. Through the behavioral analysis of six personas representing the full spectrum of target users, it was determined that the Hi-fi version is not merely a visual upgrade but a significant advancement in safety and operational efficiency.
+The system achieves a sophisticated balance between "Expert Efficiency" (via filters, search, and batch actions) and "Novice Confidence" (via safe design and intuitive color-coding). While accessibility barriers persist for elderly users in high-density information views, Kinetic Grid has proven its core value: transforming complex laser infrastructure management into a simple, safe, and accessible digital experience for all facility owners. The project is ready for real-world implementation following the proposed ergonomic and display refinements.
+________________
+6. APPENDIX
+A. Video Testing Sessions: [Drive Link]
+B. Raw Quantitative Data: [Excel Link/Raw Data Table]
+C. PUEU Questionnaire Results: [Average score of 6.6/7 for Perceived Usefulness]
+D. Informed Consent & Pre-test Demographics: [Background data of the 6 testers]
+[a]focus vào việc có người swipe, có người dùng filter, feedback về màu sắc, UI của filter?
+[b]dùng màu xanh cho empty hơi kì
+[c]không có
+[d]đã "xém" ấn vào, nhma observer thấy là cuối cùng thì k do là đã resize
+[e]focus nhiều hơn về flow để tạo một schedule nào đó: bấm nút gì - nút to nhỏ, flow có hợp lí không?
+[f]take time do k hiểu, k quen dạng biểu đồ,
+[g]feedback sai, vì có label trên block đó. nên feedback là phù hợp cho mental model (có dùng gg calendar), nhưng confuse về việc zoom in/zoom out kéo sang trái phải để nhìn cái chart rõ ràng toàn diện hơn
+[h]đề xuất tính năng nếu add lịch mới mà bị overlap thì hệ thống sẽ noti = 1 cách nào đó?
+[i]fat finger
+[j]mẹ Hân k familiar với app, nhưng mental model giống kiểu excel nên nhanh hiểu và thao tác được
+[k]??? có setting button không

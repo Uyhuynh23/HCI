@@ -8,9 +8,9 @@ import { format } from 'date-fns';
 import { getFieldStatus } from '../utils/statusUtils';
 
 const SPORT_CONFIG = {
-  Pickleball: { icon: 'sports_tennis', colorClass: 'primary', badgeBg: 'bg-primary/10', badgeText: 'text-primary', borderColor: 'border-primary', iconBg: 'bg-primary-fixed text-on-primary-fixed-variant' },
-  'Cầu lông': { icon: 'sports_tennis', colorClass: 'secondary', badgeBg: 'bg-secondary/10', badgeText: 'text-secondary', borderColor: 'border-secondary', iconBg: 'bg-secondary-container text-on-secondary-container' },
-  'Bóng chuyền': { icon: 'sports_volleyball', colorClass: 'tertiary', badgeBg: 'bg-tertiary/10', badgeText: 'text-tertiary', borderColor: 'border-tertiary', iconBg: 'bg-tertiary-fixed text-on-tertiary-fixed-variant' },
+  Pickleball: { icon: '/pickleball.png', isImage: true, colorClass: 'primary', badgeBg: 'bg-primary/10', badgeText: 'text-primary', borderColor: 'border-primary', iconBg: 'bg-primary-fixed text-on-primary-fixed-variant' },
+  'Cầu lông': { icon: '/badminton-3-svgrepo-com.svg', isImage: true, colorClass: 'secondary', badgeBg: 'bg-secondary/10', badgeText: 'text-secondary', borderColor: 'border-secondary', iconBg: 'bg-secondary-container text-on-secondary-container' },
+  'Bóng chuyền': { icon: '/volleyball-1-svgrepo-com.svg', isImage: true, colorClass: 'tertiary', badgeBg: 'bg-tertiary/10', badgeText: 'text-tertiary', borderColor: 'border-tertiary', iconBg: 'bg-tertiary-fixed text-on-tertiary-fixed-variant' },
 };
 
 export function FieldsPage() {
@@ -195,18 +195,22 @@ export function FieldsPage() {
               const timeDisplay = field.status === 'active' && field.timeRemaining
                 ? `${String(Math.floor(field.timeRemaining / 60)).padStart(2, '0')}:${String(field.timeRemaining % 60).padStart(2, '0')}`
                 : '--:--';
-
               return (
                 <div
                   key={field.id}
-                  className={`grid grid-cols-6 items-center bg-surface-container-lowest p-8 rounded-[1.5rem] editorial-shadow border-l-[6px] ${borderColor} transition-transform hover:scale-[1.01] gap-4`}
+                  onClick={() => navigate(`/fields/${field.id}`)}
+                  className={`grid grid-cols-6 items-center bg-surface-container-lowest p-8 rounded-[1.5rem] editorial-shadow border-l-[6px] ${borderColor} transition-all hover:scale-[1.01] hover:bg-slate-50 cursor-pointer gap-4 group`}
                 >
                   <div className="col-span-2 flex items-center gap-4">
-                    <div className={`w-14 h-14 ${iconBg} rounded-xl flex items-center justify-center`}>
-                      <span className="material-symbols-outlined text-[32px]">{iconName}</span>
+                    <div className={`w-14 h-14 ${iconBg} rounded-xl flex items-center justify-center transition-transform group-hover:scale-110`}>
+                      {isIdle || !config.isImage ? (
+                        <span className="material-symbols-outlined text-[32px]">{iconName}</span>
+                      ) : (
+                        <img src={iconName} alt={field.sport} className="w-8 h-8 object-contain" />
+                      )}
                     </div>
                     <div>
-                      <h3 className="body-medium-style text-on-surface leading-none">{field.name}</h3>
+                      <h3 className="body-medium-style text-on-surface leading-none group-hover:text-primary transition-colors">{field.name}</h3>
                     </div>
                   </div>
                   <div className="flex justify-center">
@@ -230,8 +234,7 @@ export function FieldsPage() {
                   </div>
                   <div className="text-right">
                     <button
-                      onClick={() => navigate(`/fields/${field.id}`)}
-                      className="px-6 py-3 bg-surface-container text-on-surface action-style rounded-xl hover:bg-surface-container-high active:scale-95 transition-all cursor-pointer"
+                      className="px-6 py-3 bg-surface-container text-on-surface action-style rounded-xl group-hover:bg-primary group-hover:text-on-primary group-hover:shadow-md active:scale-95 transition-all cursor-pointer border-none"
                     >
                       Quản lý
                     </button>
