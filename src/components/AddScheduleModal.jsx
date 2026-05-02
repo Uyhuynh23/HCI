@@ -16,6 +16,13 @@ function LargeTimePicker({ value, onChange, label }) {
 
   const hourRef = useRef(null);
   const minRef = useRef(null);
+  const hourScrollRef = useRef(null);
+  const minScrollRef = useRef(null);
+  const hourScrollTimer = useRef(null);
+  const minScrollTimer = useRef(null);
+  // Track whether user is actively scrolling to avoid fighting with programmatic scrolls
+  const isUserScrollingHour = useRef(false);
+  const isUserScrollingMin = useRef(false);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -35,6 +42,60 @@ function LargeTimePicker({ value, onChange, label }) {
       }, 50);
     }
   }, [isOpen]);
+
+  // Helper: find the centered item in a scroll container
+  const findCenteredItem = (scrollContainer, items, dataAttr) => {
+    if (!scrollContainer) return null;
+    const containerRect = scrollContainer.getBoundingClientRect();
+    const containerCenter = containerRect.top + containerRect.height / 2;
+    let closestItem = null;
+    let closestDistance = Infinity;
+    const buttons = scrollContainer.querySelectorAll(`[data-${dataAttr}]`);
+    buttons.forEach(btn => {
+      const btnRect = btn.getBoundingClientRect();
+      const btnCenter = btnRect.top + btnRect.height / 2;
+      const distance = Math.abs(btnCenter - containerCenter);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestItem = btn.getAttribute(`data-${dataAttr}`);
+      }
+    });
+    return closestItem;
+  };
+
+  // Auto-select hour when scroll ends
+  const handleHourScroll = () => {
+    isUserScrollingHour.current = true;
+    clearTimeout(hourScrollTimer.current);
+    hourScrollTimer.current = setTimeout(() => {
+      isUserScrollingHour.current = false;
+      const centered = findCenteredItem(hourScrollRef.current, HOURS, 'hour');
+      if (centered !== null && centered !== currentHour) {
+        onChange(`${centered}:${currentMinute}`);
+      }
+    }, 120);
+  };
+
+  // Auto-select minute when scroll ends
+  const handleMinuteScroll = () => {
+    isUserScrollingMin.current = true;
+    clearTimeout(minScrollTimer.current);
+    minScrollTimer.current = setTimeout(() => {
+      isUserScrollingMin.current = false;
+      const centered = findCenteredItem(minScrollRef.current, MINUTES, 'minute');
+      if (centered !== null && centered !== currentMinute) {
+        onChange(`${currentHour}:${centered}`);
+      }
+    }, 120);
+  };
+
+  // Cleanup timers
+  useEffect(() => {
+    return () => {
+      clearTimeout(hourScrollTimer.current);
+      clearTimeout(minScrollTimer.current);
+    };
+  }, []);
 
   return (
     <div className="relative w-full" ref={containerRef}>
@@ -65,13 +126,19 @@ function LargeTimePicker({ value, onChange, label }) {
             </div>
 
             {/* Hours Scroll Area */}
-            <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col items-center gap-1 py-[100px] outline-none" style={{ scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' }}>
+            <div
+              ref={hourScrollRef}
+              onScroll={handleHourScroll}
+              className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col items-center gap-1 py-[100px] outline-none"
+              style={{ scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' }}
+            >
               {HOURS.map(h => {
                 const isSelected = h === currentHour;
                 return (
                   <button
                     key={`h-${h}`}
                     ref={isSelected ? hourRef : null}
+                    data-hour={h}
                     type="button"
                     onClick={() => { onChange(`${h}:${currentMinute}`); }}
                     className={`w-24 shrink-0 h-16 rounded-xl flex items-center justify-center text-[28px] font-bold transition-all ${isSelected ? 'bg-[#6366f1] text-white shadow-lg scale-105' : 'text-[#c1c6d6] hover:text-[#727785] hover:bg-[#f8f9fa] bg-transparent'}`}
@@ -84,13 +151,19 @@ function LargeTimePicker({ value, onChange, label }) {
             </div>
 
             {/* Minutes Scroll Area */}
-            <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col items-center gap-1 py-[100px] outline-none" style={{ scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' }}>
+            <div
+              ref={minScrollRef}
+              onScroll={handleMinuteScroll}
+              className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col items-center gap-1 py-[100px] outline-none"
+              style={{ scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' }}
+            >
               {MINUTES.map(m => {
                 const isSelected = m === currentMinute;
                 return (
                   <button
                     key={`m-${m}`}
                     ref={isSelected ? minRef : null}
+                    data-minute={m}
                     type="button"
                     onClick={() => { onChange(`${currentHour}:${m}`); }}
                     className={`w-24 shrink-0 h-16 rounded-xl flex items-center justify-center text-[28px] font-bold transition-all ${isSelected ? 'bg-[#6366f1] text-white shadow-lg scale-105' : 'text-[#c1c6d6] hover:text-[#727785] hover:bg-[#f8f9fa] bg-transparent'}`}
