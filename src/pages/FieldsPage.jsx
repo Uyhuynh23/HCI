@@ -16,7 +16,7 @@ const SPORT_CONFIG = {
 export function FieldsPage() {
   const navigate = useNavigate();
   const { fields, schedules, equipment } = useApp();
-  
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
   const [selectedFilterDate, setSelectedFilterDate] = useState(new Date());
@@ -47,7 +47,7 @@ export function FieldsPage() {
   // Date display
   const dayNames = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
   const isToday = new Date().toDateString() === selectedFilterDate.toDateString();
-  const dateDisplayString = isToday 
+  const dateDisplayString = isToday
     ? `Hôm nay, ${format(selectedFilterDate, 'dd')} Tháng ${format(selectedFilterDate, 'MM')}`
     : `${dayNames[selectedFilterDate.getDay()]}, ${format(selectedFilterDate, 'dd')} Tháng ${format(selectedFilterDate, 'MM')}`;
 
@@ -113,9 +113,9 @@ export function FieldsPage() {
               <span className="body-medium-style text-on-surface">Tìm kiếm</span>
               <div className="bg-surface-container-lowest p-4 rounded-xl flex items-center gap-2 border border-outline-variant/20">
                 <span className="material-symbols-outlined text-outline text-[24px]">search</span>
-                <input 
-                  className="bg-transparent border-none focus:ring-0 w-full body-style p-0 outline-none" 
-                  placeholder="Tìm kiếm tên sân..." 
+                <input
+                  className="bg-transparent border-none focus:ring-0 w-full body-style p-0 outline-none"
+                  placeholder="Tìm kiếm tên sân..."
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -134,11 +134,10 @@ export function FieldsPage() {
                       key={sport}
                       disabled={isDisabled}
                       onClick={() => setActiveSportFilter(sport)}
-                      className={`px-6 py-2 rounded-full action-style transition-all ${
-                        activeSportFilter === sport
-                          ? 'bg-primary text-on-primary shadow-sm'
-                          : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/20 hover:bg-white'
-                      } ${isDisabled ? 'opacity-40 cursor-not-allowed grayscale-[0.5]' : ''}`}
+                      className={`px-6 py-2 rounded-full action-style transition-all ${activeSportFilter === sport
+                        ? 'bg-primary text-on-primary shadow-sm'
+                        : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/20 hover:bg-white'
+                        } ${isDisabled ? 'opacity-40 cursor-not-allowed grayscale-[0.5]' : ''}`}
                     >
                       {sport}
                     </button>
@@ -158,11 +157,10 @@ export function FieldsPage() {
                         setActiveSportFilter('Tất cả');
                       }
                     }}
-                    className={`px-6 py-2 rounded-full action-style transition-colors ${
-                      activeStatusFilter === status
-                        ? 'bg-primary text-on-primary shadow-sm'
-                        : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/20 hover:bg-white'
-                    }`}
+                    className={`px-6 py-2 rounded-full action-style transition-colors ${activeStatusFilter === status
+                      ? 'bg-primary text-on-primary shadow-sm'
+                      : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/20 hover:bg-white'
+                      }`}
                   >
                     {status}
                   </button>
@@ -174,14 +172,14 @@ export function FieldsPage() {
 
         {/* Court List */}
         <section className="space-y-4">
-          <div className="grid grid-cols-6 px-8 small-style font-bold uppercase tracking-widest mb-4 gap-4">
-            <div className="col-span-2">Thông tin</div>
+          <div className="grid grid-cols-5 px-8 small-style font-bold uppercase tracking-widest mb-4 gap-4">
+            <div className="text-center">Thông tin</div>
             <div className="text-center">Môn</div>
             <div className="text-center">Trạng thái</div>
             <div className="text-center">Thời gian còn lại</div>
             <div className="text-right px-4">Hành động</div>
           </div>
-          
+
           {/* List Items */}
           <div className="space-y-8">
             {filteredFields.map((field) => {
@@ -199,9 +197,9 @@ export function FieldsPage() {
                 <div
                   key={field.id}
                   onClick={() => navigate(`/fields/${field.id}`)}
-                  className={`grid grid-cols-6 items-center bg-surface-container-lowest p-8 rounded-[1.5rem] editorial-shadow border-l-[6px] ${borderColor} transition-all hover:scale-[1.01] hover:bg-slate-50 cursor-pointer gap-4 group`}
+                  className={`grid grid-cols-5 items-center bg-surface-container-lowest p-8 rounded-[1.5rem] editorial-shadow border-l-[6px] ${borderColor} transition-all hover:scale-[1.01] hover:bg-slate-50 cursor-pointer gap-4 group`}
                 >
-                  <div className="col-span-2 flex items-center gap-4">
+                  <div className="flex items-center gap-4">
                     <div className={`w-14 h-14 ${iconBg} rounded-xl flex items-center justify-center transition-transform group-hover:scale-110`}>
                       {isIdle || !config.isImage ? (
                         <span className="material-symbols-outlined text-[32px]">{iconName}</span>
@@ -259,15 +257,15 @@ export function FieldsPage() {
       </div>
 
       <AddScheduleModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
-      
-      <DateSelectionModal 
-        isOpen={isDateModalOpen} 
-        onClose={() => setIsDateModalOpen(false)} 
-        initialDate={selectedFilterDate} 
-        onConfirm={(d) => setSelectedFilterDate(d)} 
+
+      <DateSelectionModal
+        isOpen={isDateModalOpen}
+        onClose={() => setIsDateModalOpen(false)}
+        initialDate={selectedFilterDate}
+        onConfirm={(d) => setSelectedFilterDate(d)}
       />
 
-      <TimeRangeSelectionModal 
+      <TimeRangeSelectionModal
         isOpen={isTimeRangeModalOpen}
         onClose={() => setIsTimeRangeModalOpen(false)}
         initialStartTime={timeRange.startTime}
