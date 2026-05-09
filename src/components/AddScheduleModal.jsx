@@ -8,7 +8,7 @@ import { playSuccessSound } from '../utils/audio';
 const HOURS = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
 const MINUTES = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
 
-function LargeTimePicker({ value, onChange, label }) {
+export function LargeTimePicker({ value, onChange, label }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
 
@@ -129,7 +129,7 @@ function LargeTimePicker({ value, onChange, label }) {
             <div
               ref={hourScrollRef}
               onScroll={handleHourScroll}
-              className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col items-center gap-1 py-[100px] outline-none"
+              className="flex-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col items-center gap-1 py-[100px] outline-none"
               style={{ scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' }}
             >
               {HOURS.map(h => {
@@ -154,7 +154,7 @@ function LargeTimePicker({ value, onChange, label }) {
             <div
               ref={minScrollRef}
               onScroll={handleMinuteScroll}
-              className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col items-center gap-1 py-[100px] outline-none"
+              className="flex-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col items-center gap-1 py-[100px] outline-none"
               style={{ scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' }}
             >
               {MINUTES.map(m => {
