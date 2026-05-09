@@ -193,6 +193,8 @@ export function AddScheduleModal({ isOpen, onClose, initialFieldId, initialDate 
   // Initialize Simple string times
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('11:00');
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
   const [validationError, setValidationError] = useState('');
 
   const prevIsOpen = useRef(false);
@@ -205,6 +207,8 @@ export function AddScheduleModal({ isOpen, onClose, initialFieldId, initialDate 
       setSelectedDate(initialDate || new Date());
       setStartTime('09:00');
       setEndTime('11:00');
+      setCustomerName('');
+      setCustomerPhone('');
       setValidationError('');
     }
     prevIsOpen.current = isOpen;
@@ -258,11 +262,13 @@ export function AddScheduleModal({ isOpen, onClose, initialFieldId, initialDate 
       endTime,
       status: 'upcoming',
       createdAt: new Date().toISOString(),
+      customerName: customerName.trim(),
+      customerPhone: customerPhone.trim(),
     };
 
     addSchedule(newSchedule);
     addActivity({
-      message: `Lịch trình mới: ${selectedSport} tại ${selectedField?.name || 'Sân'} từ ${startTime} đến ${endTime}.`,
+      message: `Lịch trình mới: ${selectedSport} tại ${selectedField?.name || 'Sân'} từ ${startTime} đến ${endTime}${customerName.trim() ? ` — KH: ${customerName.trim()}` : ''}.`,
       type: 'info',
     });
     playSuccessSound();
@@ -384,6 +390,34 @@ export function AddScheduleModal({ isOpen, onClose, initialFieldId, initialDate 
             <div className="grid grid-cols-2 gap-4">
               <LargeTimePicker label="BẮT ĐẦU" value={startTime} onChange={setStartTime} />
               <LargeTimePicker label="KẾT THÚC" value={endTime} onChange={setEndTime} />
+            </div>
+          </section>
+
+          {/* Customer Info */}
+          <section className="space-y-4">
+            <h2 className="font-headline text-[24px] font-bold text-[#191c1d] uppercase block">THÔNG TIN KHÁCH HÀNG</h2>
+            <div className="space-y-4">
+              <div className="flex items-center bg-white border-b-2 border-[#e0e3e8] rounded-xl shadow-sm px-6 h-20 gap-4 hover:border-[#c1c6d6] focus-within:border-[#1a73e8] focus-within:ring-4 focus-within:ring-[#1a73e8]/10 transition-all">
+                <span className="material-symbols-outlined text-[#1a73e8] text-[28px]">person</span>
+                <input
+                  type="text"
+                  placeholder="Tên khách hàng (không bắt buộc)"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  maxLength={100}
+                  className="flex-1 bg-transparent border-none outline-none font-body text-[18px] font-medium text-[#191c1d] placeholder:text-[#a0a4b0]"
+                />
+              </div>
+              <div className="flex items-center bg-white border-b-2 border-[#e0e3e8] rounded-xl shadow-sm px-6 h-20 gap-4 hover:border-[#c1c6d6] focus-within:border-[#1a73e8] focus-within:ring-4 focus-within:ring-[#1a73e8]/10 transition-all">
+                <span className="material-symbols-outlined text-[#1a73e8] text-[28px]">phone</span>
+                <input
+                  type="tel"
+                  placeholder="Số điện thoại (không bắt buộc)"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  className="flex-1 bg-transparent border-none outline-none font-body text-[18px] font-medium text-[#191c1d] placeholder:text-[#a0a4b0]"
+                />
+              </div>
             </div>
           </section>
 

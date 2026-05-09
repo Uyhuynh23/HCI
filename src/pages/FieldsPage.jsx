@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { AddScheduleModal } from '../components/AddScheduleModal';
@@ -6,12 +6,134 @@ import { DateSelectionModal } from '../components/DateSelectionModal';
 import { TimeRangeSelectionModal } from '../components/TimeRangeSelectionModal';
 import { format } from 'date-fns';
 import { getFieldStatus } from '../utils/statusUtils';
+import { useLongPress } from '../hooks/useLongPress';
+
+const LONG_PRESS_HINT_KEY = 'kinetic-grid-longpress-hint-shown';
 
 const SPORT_CONFIG = {
   Pickleball: { icon: '/pickleball.png', isImage: true, colorClass: 'primary', badgeBg: 'bg-primary/10', badgeText: 'text-primary', borderColor: 'border-primary', iconBg: 'bg-primary-fixed text-on-primary-fixed-variant' },
   'Cầu lông': { icon: '/badminton-3-svgrepo-com.svg', isImage: true, colorClass: 'secondary', badgeBg: 'bg-secondary/10', badgeText: 'text-secondary', borderColor: 'border-secondary', iconBg: 'bg-secondary-container text-on-secondary-container' },
   'Bóng chuyền': { icon: '/volleyball-1-svgrepo-com.svg', isImage: true, colorClass: 'tertiary', badgeBg: 'bg-tertiary/10', badgeText: 'text-tertiary', borderColor: 'border-tertiary', iconBg: 'bg-tertiary-fixed text-on-tertiary-fixed-variant' },
 };
+
+// Sub-component for each court card with long-press gesture support
+function CourtCard({ field, navigate }) {
+  const isIdle = field.status === 'idle';
+  const config = SPORT_CONFIG[field.sport] || SPORT_CONFIG['Pickleball'];
+  const borderColor = isIdle ? 'border-outline-variant' : config.borderColor;
+  const iconBg = isIdle ? 'bg-surface-container text-outline' : config.iconBg;
+  const iconName = isIdle ? 'sports_score' : config.icon;
+
+  const [showHint, setShowHint] = useState(false);
+
+  const timeDisplay = field.status === 'active' && field.timeRemaining
+    ? `${String(Math.floor(field.timeRemaining / 60)).padStart(2, '0')}:${String(field.timeRemaining % 60).padStart(2, '0')}`
+    : '--:--';
+
+  const handleLongPress = useCallback(() => {
+    navigate(`/fields/${field.id}`);
+  }, [navigate, field.id]);
+
+  const { isPressed, handlers } = useLongPress(handleLongPress, { threshold: 400, moveCancel: 10 });
+
+  // Show one-time hint on first long-press attempt for active courts
+  const handlePointerDown = (e) => {
+    if (!isIdle) {
+      const hintShown = localStorage.getItem(LONG_PRESS_HINT_KEY);
+      if (!hintShown) {
+        setShowHint(true);
+        localStorage.setItem(LONG_PRESS_HINT_KEY, 'true');
+        setTimeout(() => setShowHint(false), 3000);
+      }
+      handlers.onPointerDown(e);
+    }
+  };
+
+  const handleClick = (e) => {
+    if (isIdle) {
+      navigate(`/fields/${field.id}`);
+    }
+    // Active courts: click does nothing — handled by long-press
+  };
+
+  const handleManageClick = (e) => {
+    e.stopPropagation();
+    navigate(`/fields/${field.id}`);
+  };
+
+  return (
+    <div
+      onClick={handleClick}
+      {...(!isIdle ? {
+        onPointerDown: handlePointerDown,
+        onPointerMove: handlers.onPointerMove,
+        onPointerUp: handlers.onPointerUp,
+        onPointerCancel: handlers.onPointerCancel,
+      } : {})}
+      className={`grid grid-cols-5 items-center bg-surface-container-lowest p-8 rounded-[1.5rem] editorial-shadow border-l-[6px] ${borderColor} transition-all hover:scale-[1.01] hover:bg-slate-50 cursor-pointer gap-4 group relative select-none`}
+      style={{ touchAction: isIdle ? 'auto' : 'pan-y' }}
+    >
+      {/* Long-press progress ring overlay */}
+      {!isIdle && isPressed && (
+        <div className="absolute inset-0 rounded-[1.5rem] pointer-events-none z-20 flex items-center justify-center bg-black/5">
+          <svg width="56" height="56" viewBox="0 0 56 56" className="animate-spin-progress">
+            <circle cx="28" cy="28" r="24" fill="none" stroke="currentColor" strokeWidth="4" className="text-primary/20" />
+            <circle cx="28" cy="28" r="24" fill="none" stroke="currentColor" strokeWidth="4" className="text-primary" strokeDasharray="150.8" strokeDashoffset="150.8" strokeLinecap="round"
+              style={{ animation: 'longpress-ring 400ms linear forwards' }}
+            />
+          </svg>
+        </div>
+      )}
+
+      {/* One-time hint snackbar */}
+      {showHint && (
+        <div className="absolute -top-14 left-1/2 -translate-x-1/2 bg-[#191c1d] text-white text-[14px] font-medium px-5 py-2.5 rounded-xl shadow-lg whitespace-nowrap z-30 animate-in fade-in slide-in-from-bottom-2 duration-200">
+          Nhấn giữ để mở chi tiết sân đang hoạt động
+        </div>
+      )}
+
+      <div className="flex items-center gap-4">
+        <div className={`w-14 h-14 ${iconBg} rounded-xl flex items-center justify-center transition-transform group-hover:scale-110`}>
+          {isIdle || !config.isImage ? (
+            <span className="material-symbols-outlined text-[32px]">{iconName}</span>
+          ) : (
+            <img src={iconName} alt={field.sport} className="w-8 h-8 object-contain" />
+          )}
+        </div>
+        <div>
+          <h3 className="body-medium-style text-on-surface leading-none group-hover:text-primary transition-colors">{field.name}</h3>
+        </div>
+      </div>
+      <div className="flex justify-center">
+        {isIdle ? (
+          <span className="inline-flex px-4 py-2 rounded-lg bg-surface-container text-outline body-medium-style">—</span>
+        ) : (
+          <span className={`inline-flex px-4 py-2 rounded-lg ${config.badgeBg} ${config.badgeText} body-medium-style uppercase whitespace-nowrap`}>
+            {field.sport}
+          </span>
+        )}
+      </div>
+      <div className="flex items-center gap-2 justify-center">
+        <span className={`body-medium-style whitespace-nowrap ${field.status === 'active' ? 'text-error' : 'text-outline'}`}>
+          {field.status === 'active' ? 'Hoạt động' : 'Trống'}
+        </span>
+      </div>
+      <div className="text-center flex justify-center items-center">
+        <span className="body-style !text-on-surface whitespace-nowrap">
+          {timeDisplay}
+        </span>
+      </div>
+      <div className="text-right">
+        <button
+          onClick={handleManageClick}
+          className="px-6 py-3 bg-surface-container text-on-surface action-style rounded-xl group-hover:bg-primary group-hover:text-on-primary group-hover:shadow-md active:scale-95 transition-all cursor-pointer border-none"
+        >
+          Quản lý
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export function FieldsPage() {
   const navigate = useNavigate();
@@ -182,64 +304,9 @@ export function FieldsPage() {
 
           {/* List Items */}
           <div className="space-y-8">
-            {filteredFields.map((field) => {
-              const isIdle = field.status === 'idle';
-              const config = SPORT_CONFIG[field.sport] || SPORT_CONFIG['Pickleball'];
-              const borderColor = isIdle ? 'border-outline-variant' : config.borderColor;
-              const iconBg = isIdle ? 'bg-surface-container text-outline' : config.iconBg;
-              const iconName = isIdle ? 'sports_score' : config.icon;
-
-              // Format time remaining from seconds to MM:SS
-              const timeDisplay = field.status === 'active' && field.timeRemaining
-                ? `${String(Math.floor(field.timeRemaining / 60)).padStart(2, '0')}:${String(field.timeRemaining % 60).padStart(2, '0')}`
-                : '--:--';
-              return (
-                <div
-                  key={field.id}
-                  onClick={() => navigate(`/fields/${field.id}`)}
-                  className={`grid grid-cols-5 items-center bg-surface-container-lowest p-8 rounded-[1.5rem] editorial-shadow border-l-[6px] ${borderColor} transition-all hover:scale-[1.01] hover:bg-slate-50 cursor-pointer gap-4 group`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-14 h-14 ${iconBg} rounded-xl flex items-center justify-center transition-transform group-hover:scale-110`}>
-                      {isIdle || !config.isImage ? (
-                        <span className="material-symbols-outlined text-[32px]">{iconName}</span>
-                      ) : (
-                        <img src={iconName} alt={field.sport} className="w-8 h-8 object-contain" />
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="body-medium-style text-on-surface leading-none group-hover:text-primary transition-colors">{field.name}</h3>
-                    </div>
-                  </div>
-                  <div className="flex justify-center">
-                    {isIdle ? (
-                      <span className="inline-flex px-4 py-2 rounded-lg bg-surface-container text-outline body-medium-style">—</span>
-                    ) : (
-                      <span className={`inline-flex px-4 py-2 rounded-lg ${config.badgeBg} ${config.badgeText} body-medium-style uppercase whitespace-nowrap`}>
-                        {field.sport}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 justify-center">
-                    <span className={`body-medium-style whitespace-nowrap ${field.status === 'active' ? 'text-error' : 'text-outline'}`}>
-                      {field.status === 'active' ? 'Hoạt động' : 'Trống'}
-                    </span>
-                  </div>
-                  <div className="text-center flex justify-center items-center">
-                    <span className="body-style !text-on-surface whitespace-nowrap">
-                      {timeDisplay}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <button
-                      className="px-6 py-3 bg-surface-container text-on-surface action-style rounded-xl group-hover:bg-primary group-hover:text-on-primary group-hover:shadow-md active:scale-95 transition-all cursor-pointer border-none"
-                    >
-                      Quản lý
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+            {filteredFields.map((field) => (
+              <CourtCard key={field.id} field={field} navigate={navigate} />
+            ))}
 
             {filteredFields.length === 0 && (
               <div className="flex flex-col items-center justify-center py-16 text-on-surface-variant">

@@ -17,6 +17,12 @@ const GANTT_TOTAL_HOURS = GANTT_END_HOUR - GANTT_START_HOUR;
 const GANTT_TOTAL_MINUTES = GANTT_TOTAL_HOURS * 60;
 const SNAP_MINUTES = 15; // Snap to 15-min increments
 
+// Condensed mode constants
+const CONDENSED_START_HOUR = 5;
+const CONDENSED_END_HOUR = 23;
+const CONDENSED_TOTAL_HOURS = CONDENSED_END_HOUR - CONDENSED_START_HOUR;
+const CONDENSED_TOTAL_MINUTES = CONDENSED_TOTAL_HOURS * 60;
+
 function timeToMinutes(timeStr) {
   const [h, m] = timeStr.split(':').map(Number);
   return h * 60 + m;
@@ -28,17 +34,17 @@ function minutesToTime(mins) {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
-function timeToPercent(timeStr) {
-  const totalMinutes = timeToMinutes(timeStr) - GANTT_START_HOUR * 60;
-  return (totalMinutes / GANTT_TOTAL_MINUTES) * 100;
+function timeToPercent(timeStr, startHour, totalMinutes) {
+  const mins = timeToMinutes(timeStr) - startHour * 60;
+  return (mins / totalMinutes) * 100;
 }
 
-function durationPercent(startTime, endTime) {
+function durationPercent(startTime, endTime, totalMinutes) {
   const durationMinutes = timeToMinutes(endTime) - timeToMinutes(startTime);
-  return (durationMinutes / GANTT_TOTAL_MINUTES) * 100;
+  return (durationMinutes / totalMinutes) * 100;
 }
 
-const DraggableBooking = ({ schedule, color, leftPercent, widthPercent, containerWidth, onDragEnd }) => {
+const DraggableBooking = ({ schedule, color, leftPercent, widthPercent, containerWidth, onDragEnd, ganttStartHour, ganttEndHour, ganttTotalMinutes, isCondensed }) => {
   const [offsetX, setOffsetX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const startX = useRef(0);
@@ -46,9 +52,9 @@ const DraggableBooking = ({ schedule, color, leftPercent, widthPercent, containe
 
   // Calculate the live-preview time based on current drag offset
   const duration = timeToMinutes(schedule.endTime) - timeToMinutes(schedule.startTime);
-  const pixelsPerMinute = containerWidth > 0 ? containerWidth / GANTT_TOTAL_MINUTES : 0;
+  const pixelsPerMinute = containerWidth > 0 ? containerWidth / ganttTotalMinutes : 0;
   const deltaMinutes = pixelsPerMinute > 0 ? Math.round(offsetX / pixelsPerMinute / SNAP_MINUTES) * SNAP_MINUTES : 0;
-  const previewStartMin = Math.max(GANTT_START_HOUR * 60, Math.min(GANTT_END_HOUR * 60 - duration, timeToMinutes(schedule.startTime) + deltaMinutes));
+  const previewStartMin = Math.max(ganttStartHour * 60, Math.min(ganttEndHour * 60 - duration, timeToMinutes(schedule.startTime) + deltaMinutes));
   const previewEndMin = previewStartMin + duration;
   const previewStart = minutesToTime(previewStartMin);
   const previewEnd = minutesToTime(previewEndMin);
@@ -78,19 +84,31 @@ const DraggableBooking = ({ schedule, color, leftPercent, widthPercent, containe
     setOffsetX(0); // Reset visual offset — the position will update from new data
   };
 
+  // Build tooltip with full details including customer
+  const tooltipText = [
+    `${schedule.sport} — ${schedule.startTime} - ${schedule.endTime}`,
+    schedule.customerName ? `KH: ${schedule.customerName}` : null,
+    schedule.customerPhone ? `ĐT: ${schedule.customerPhone}` : null,
+  ].filter(Boolean).join(' | ');
+
+  const rowHeight = isCondensed ? 'h-10' : 'h-20';
+  const textSizeName = isCondensed ? 'text-[13px]' : 'text-[20px]';
+  const textSizeTime = isCondensed ? 'text-[11px]' : 'text-[16px]';
+  const paddingX = isCondensed ? 'px-2' : 'px-4';
+
   return (
     <div
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
-      className="absolute h-20 flex flex-col justify-center px-4 shadow-md cursor-grab active:cursor-grabbing hover:brightness-105 select-none transition-shadow overflow-hidden"
-      title={`${schedule.sport} — ${schedule.startTime} - ${schedule.endTime}`}
+      className={`absolute ${rowHeight} flex flex-col justify-center ${paddingX} shadow-md cursor-grab active:cursor-grabbing hover:brightness-105 select-none transition-shadow overflow-hidden`}
+      title={tooltipText}
       style={{
         left: `${leftPercent}%`,
         width: `${widthPercent}%`,
         backgroundColor: color,
-        borderRadius: "1.5rem 0.25rem 1.5rem 0.25rem",
+        borderRadius: isCondensed ? "0.75rem 0.125rem 0.75rem 0.125rem" : "1.5rem 0.25rem 1.5rem 0.25rem",
         transform: `translateX(${offsetX}px)`,
         zIndex: isDragging ? 50 : 10,
         boxShadow: isDragging ? "0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)" : undefined,
@@ -98,8 +116,10 @@ const DraggableBooking = ({ schedule, color, leftPercent, widthPercent, containe
       }}
     >
       <div className="pointer-events-none flex flex-col overflow-hidden">
-        <span className="text-white font-bold text-[20px] overflow-hidden text-ellipsis whitespace-nowrap">{schedule.sport}</span>
-        <span className="text-white/90 text-[16px] overflow-hidden text-ellipsis whitespace-nowrap">{isDragging ? `${previewStart} - ${previewEnd}` : `${schedule.startTime} - ${schedule.endTime}`}</span>
+        <span className={`text-white font-bold ${textSizeName} overflow-hidden text-ellipsis whitespace-nowrap leading-tight`}>{schedule.sport}</span>
+        {(!isCondensed || widthPercent > 5) && (
+          <span className={`text-white/90 ${textSizeTime} overflow-hidden text-ellipsis whitespace-nowrap leading-tight`}>{isDragging ? `${previewStart} - ${previewEnd}` : `${schedule.startTime} - ${schedule.endTime}`}</span>
+        )}
       </div>
     </div>
   );
@@ -108,6 +128,7 @@ const DraggableBooking = ({ schedule, color, leftPercent, widthPercent, containe
 export function SchedulePage() {
   const { fields, schedules, equipment, updateSchedule, addActivity } = useApp();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isCondensed, setIsCondensed] = useState(false);
 
   // Measure the timeline content width for drag calculations
   const ganttBodyRef = useRef(null);
@@ -170,15 +191,21 @@ export function SchedulePage() {
     displayFields = displayFields.filter((f) => f.id === filterCourt);
   }
 
+  // Compute active time constants based on condensed mode
+  const activeStartHour = isCondensed ? CONDENSED_START_HOUR : GANTT_START_HOUR;
+  const activeEndHour = isCondensed ? CONDENSED_END_HOUR : GANTT_END_HOUR;
+  const activeTotalHours = activeEndHour - activeStartHour;
+  const activeTotalMinutes = activeTotalHours * 60;
+
   // "Now" marker position
   const now = new Date();
   const nowHour = now.getHours();
   const nowMinute = now.getMinutes();
-  const nowPercent = ((nowHour - GANTT_START_HOUR) * 60 + nowMinute) / (GANTT_TOTAL_HOURS * 60) * 100;
+  const nowPercent = ((nowHour - activeStartHour) * 60 + nowMinute) / (activeTotalHours * 60) * 100;
   const showNowMarker = nowPercent >= 0 && nowPercent <= 100;
 
   // Compute stats
-  const totalFieldHours = fields.length * GANTT_TOTAL_HOURS;
+  const totalFieldHours = fields.length * activeTotalHours;
   const bookedHours = todaySchedules.reduce((sum, s) => {
     const [sh, sm] = s.startTime.split(':').map(Number);
     const [eh, em] = s.endTime.split(':').map(Number);
@@ -190,9 +217,9 @@ export function SchedulePage() {
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const recentBookingCount = schedules.filter((s) => s.createdAt && s.createdAt > oneDayAgo).length;
 
-  // Time header columns
-  const timeHeaders = Array.from({ length: GANTT_TOTAL_HOURS }, (_, i) => {
-    const hour = GANTT_START_HOUR + i;
+  // Time header columns (dynamic based on mode)
+  const timeHeaders = Array.from({ length: activeTotalHours }, (_, i) => {
+    const hour = activeStartHour + i;
     return `${String(hour).padStart(2, '0')}:00`;
   });
 
@@ -287,24 +314,37 @@ export function SchedulePage() {
             </div>
           )}
         </div>
+
+        {/* Condensed view toggle */}
+        <button
+          onClick={() => setIsCondensed(!isCondensed)}
+          className={`flex items-center gap-3 px-6 py-3.5 rounded-xl text-[18px] font-medium active:scale-95 transition-all outline-none ml-auto ${
+            isCondensed
+              ? 'bg-[#005bbf] text-white shadow-md'
+              : 'bg-[#e1e3e4] hover:bg-[#d9dadb] text-[#191C1D]'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[24px]">{isCondensed ? 'zoom_in_map' : 'zoom_out_map'}</span>
+          Thu gọn
+        </button>
       </section>
 
       {/* Gantt Chart Container */}
       <section className="flex-1 px-8 pb-8 flex flex-col min-h-0">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 flex-1 flex flex-col relative overflow-x-auto overflow-y-auto max-h-[70vh]">
-          <div className="min-w-[1400px]">
+        <div className={`bg-white rounded-2xl shadow-sm border border-gray-200 flex-1 flex flex-col relative ${isCondensed ? 'overflow-hidden' : 'overflow-x-auto overflow-y-auto max-h-[70vh]'}`}>
+          <div className={isCondensed ? '' : 'min-w-[1400px]'}>
             {/* Time Header - sticky at top so it doesn't scroll away */}
-            <div className="grid bg-[#e7e8e9] border-b border-[#d9dadb] sticky top-0 z-20" style={{ gridTemplateColumns: `140px repeat(${GANTT_TOTAL_HOURS}, 1fr)` }}>
-              <div className="p-4 border-r border-[#d9dadb] bg-[#e1e3e4] font-bold text-[16px] flex items-center justify-center text-[#191C1D]">Sân</div>
+            <div className={`grid bg-[#e7e8e9] border-b border-[#d9dadb] sticky top-0 z-20`} style={{ gridTemplateColumns: `${isCondensed ? '80px' : '140px'} repeat(${activeTotalHours}, 1fr)` }}>
+              <div className={`${isCondensed ? 'p-2 text-[13px]' : 'p-4 text-[16px]'} border-r border-[#d9dadb] bg-[#e1e3e4] font-bold flex items-center justify-center text-[#191C1D]`}>Sân</div>
               {timeHeaders.map((t) => (
-                <div key={t} className="p-4 text-center font-bold text-[16px] text-[#414754]">{t}</div>
+                <div key={t} className={`${isCondensed ? 'p-1 text-[11px]' : 'p-4 text-[16px]'} text-center font-bold text-[#414754]`}>{t}</div>
               ))}
             </div>
 
             {/* Grid Rows */}
             <div className="relative">
               {/* Vertical Guide Lines */}
-              <div className="absolute inset-0 pointer-events-none" style={{ display: 'grid', gridTemplateColumns: `140px repeat(${GANTT_TOTAL_HOURS}, 1fr)` }}>
+              <div className="absolute inset-0 pointer-events-none" style={{ display: 'grid', gridTemplateColumns: `${isCondensed ? '80px' : '140px'} repeat(${activeTotalHours}, 1fr)` }}>
                   <div></div>
                   {timeHeaders.map((t, i) => (
                     <div key={i} className="border-r border-gray-100"></div>
@@ -315,7 +355,7 @@ export function SchedulePage() {
               {showNowMarker && (
                 <div
                   className="absolute top-0 bottom-0 w-[3px] bg-[#005bbf] z-20 pointer-events-none"
-                  style={{ left: `calc(140px + (100% - 140px) * ${nowPercent / 100})` }}
+                  style={{ left: `calc(${isCondensed ? '80px' : '140px'} + (100% - ${isCondensed ? '80px' : '140px'}) * ${nowPercent / 100})` }}
                 >
                   <div className="absolute top-[-10px] left-1/2 -translate-x-1/2 bg-[#005bbf] text-white text-[12px] py-1 px-3 rounded-full font-bold whitespace-nowrap z-30">
                     BÂY GIỜ
@@ -329,12 +369,12 @@ export function SchedulePage() {
                   .filter((s) => filterSport === 'Tất cả' || s.sport === filterSport);
 
                 return (
-                  <div key={field.id} className={`min-h-[120px] ${rowIdx < displayFields.length - 1 ? 'border-b border-[#e1e3e4]' : ''}`} style={{ display: 'grid', gridTemplateColumns: '140px 1fr' }}>
-                    <div className="p-6 border-r border-[#e1e3e4] flex items-center justify-center bg-[#f3f4f5] font-bold text-[22px] text-[#191C1D] sticky left-0 z-10">{field.name}</div>
-                    <div ref={rowIdx === 0 ? measureContainer : undefined} className="relative p-4 flex items-center w-full">
+                  <div key={field.id} className={`${isCondensed ? 'min-h-[56px]' : 'min-h-[120px]'} ${rowIdx < displayFields.length - 1 ? 'border-b border-[#e1e3e4]' : ''}`} style={{ display: 'grid', gridTemplateColumns: `${isCondensed ? '80px' : '140px'} 1fr` }}>
+                    <div className={`${isCondensed ? 'p-2 text-[14px]' : 'p-6 text-[22px]'} border-r border-[#e1e3e4] flex items-center justify-center bg-[#f3f4f5] font-bold text-[#191C1D] sticky left-0 z-10`}>{field.name}</div>
+                    <div ref={rowIdx === 0 ? measureContainer : undefined} className={`relative ${isCondensed ? 'p-1' : 'p-4'} flex items-center w-full`}>
                       {fieldSchedules.map((schedule) => {
-                        const left = timeToPercent(schedule.startTime);
-                        const width = durationPercent(schedule.startTime, schedule.endTime);
+                        const left = timeToPercent(schedule.startTime, activeStartHour, activeTotalMinutes);
+                        const width = durationPercent(schedule.startTime, schedule.endTime, activeTotalMinutes);
                         const color = SPORT_COLORS[schedule.sport] || '#007BFF';
 
                         return (
@@ -346,6 +386,10 @@ export function SchedulePage() {
                             widthPercent={width}
                             containerWidth={containerWidth}
                             onDragEnd={handleDragEnd}
+                            ganttStartHour={activeStartHour}
+                            ganttEndHour={activeEndHour}
+                            ganttTotalMinutes={activeTotalMinutes}
+                            isCondensed={isCondensed}
                           />
                         );
                       })}

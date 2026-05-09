@@ -61,6 +61,8 @@ export function generateSeedData() {
       endTime: getTimeStr(1),
       status: 'ongoing',
       createdAt: new Date().toISOString(),
+      customerName: 'Nguyễn Văn An',
+      customerPhone: '0901234567',
     }
   ];
 
