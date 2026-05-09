@@ -1,44 +1,166 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+
+const HOURS = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
+const MINUTES = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
+
+/**
+ * Internal scroll-based time picker column pair (hours : minutes).
+ * Mirrors the LargeTimePicker UX from AddScheduleModal but rendered inline.
+ */
+function ScrollTimePicker({ value, onChange }) {
+  const [currentHour, currentMinute] = value ? value.split(':') : ['08', '00'];
+
+  const hourRef = useRef(null);
+  const minRef = useRef(null);
+  const hourScrollRef = useRef(null);
+  const minScrollRef = useRef(null);
+  const hourScrollTimer = useRef(null);
+  const minScrollTimer = useRef(null);
+
+  // Scroll selected items into view on mount
+  useEffect(() => {
+    setTimeout(() => {
+      if (hourRef.current) hourRef.current.scrollIntoView({ behavior: 'auto', block: 'center' });
+      if (minRef.current) minRef.current.scrollIntoView({ behavior: 'auto', block: 'center' });
+    }, 50);
+  }, []);
+
+  // Helper: find the centered item in a scroll container
+  const findCenteredItem = (scrollContainer, dataAttr) => {
+    if (!scrollContainer) return null;
+    const containerRect = scrollContainer.getBoundingClientRect();
+    const containerCenter = containerRect.top + containerRect.height / 2;
+    let closestItem = null;
+    let closestDistance = Infinity;
+    const buttons = scrollContainer.querySelectorAll(`[data-${dataAttr}]`);
+    buttons.forEach(btn => {
+      const btnRect = btn.getBoundingClientRect();
+      const btnCenter = btnRect.top + btnRect.height / 2;
+      const distance = Math.abs(btnCenter - containerCenter);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestItem = btn.getAttribute(`data-${dataAttr}`);
+      }
+    });
+    return closestItem;
+  };
+
+  const handleHourScroll = () => {
+    clearTimeout(hourScrollTimer.current);
+    hourScrollTimer.current = setTimeout(() => {
+      const centered = findCenteredItem(hourScrollRef.current, 'hour');
+      if (centered !== null && centered !== currentHour) {
+        onChange(`${centered}:${currentMinute}`);
+      }
+    }, 120);
+  };
+
+  const handleMinuteScroll = () => {
+    clearTimeout(minScrollTimer.current);
+    minScrollTimer.current = setTimeout(() => {
+      const centered = findCenteredItem(minScrollRef.current, 'minute');
+      if (centered !== null && centered !== currentMinute) {
+        onChange(`${currentHour}:${centered}`);
+      }
+    }, 120);
+  };
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(hourScrollTimer.current);
+      clearTimeout(minScrollTimer.current);
+    };
+  }, []);
+
+  return (
+    <div className="flex justify-center gap-4 h-[280px] relative">
+      {/* Central Active Band */}
+      <div className="absolute top-1/2 left-0 right-0 h-16 -translate-y-1/2 bg-[#f1f4f9] rounded-xl pointer-events-none -z-10"></div>
+
+      {/* Colon Separator */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+        <span className="text-[36px] font-bold text-[#727785] mb-1">:</span>
+      </div>
+
+      {/* Hours Column */}
+      <div
+        ref={hourScrollRef}
+        onScroll={handleHourScroll}
+        className="flex-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col items-center gap-1 py-[112px] outline-none"
+        style={{ scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' }}
+      >
+        {HOURS.map(h => {
+          const isSelected = h === currentHour;
+          return (
+            <button
+              key={`h-${h}`}
+              ref={isSelected ? hourRef : null}
+              data-hour={h}
+              type="button"
+              onClick={() => onChange(`${h}:${currentMinute}`)}
+              className={`w-24 shrink-0 h-16 rounded-xl flex items-center justify-center text-[32px] font-bold transition-all ${isSelected ? 'bg-[#6366f1] text-white shadow-lg scale-105' : 'text-[#c1c6d6] hover:text-[#727785] hover:bg-[#f8f9fa] bg-transparent'}`}
+              style={{ scrollSnapAlign: 'center' }}
+            >
+              {h}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Minutes Column */}
+      <div
+        ref={minScrollRef}
+        onScroll={handleMinuteScroll}
+        className="flex-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col items-center gap-1 py-[112px] outline-none"
+        style={{ scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' }}
+      >
+        {MINUTES.map(m => {
+          const isSelected = m === currentMinute;
+          return (
+            <button
+              key={`m-${m}`}
+              ref={isSelected ? minRef : null}
+              data-minute={m}
+              type="button"
+              onClick={() => onChange(`${currentHour}:${m}`)}
+              className={`w-24 shrink-0 h-16 rounded-xl flex items-center justify-center text-[32px] font-bold transition-all ${isSelected ? 'bg-[#6366f1] text-white shadow-lg scale-105' : 'text-[#c1c6d6] hover:text-[#727785] hover:bg-[#f8f9fa] bg-transparent'}`}
+              style={{ scrollSnapAlign: 'center' }}
+            >
+              {m}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export function TimeRangeSelectionModal({ isOpen, onClose, initialStartTime = "08:00", initialEndTime = "10:00", onConfirm }) {
   const [editingTarget, setEditingTarget] = useState('start');
-  const [startClock, setStartClock] = useState({ hour: 8, minute: 0 });
-  const [endClock, setEndClock] = useState({ hour: 10, minute: 0 });
+  const [startTime, setStartTime] = useState(initialStartTime);
+  const [endTime, setEndTime] = useState(initialEndTime);
 
   useEffect(() => {
     if (isOpen) {
-      const [sh, sm] = (initialStartTime || "08:00").split(':');
-      setStartClock({ hour: parseInt(sh, 10), minute: parseInt(sm, 10) });
-      const [eh, em] = (initialEndTime || "10:00").split(':');
-      setEndClock({ hour: parseInt(eh, 10), minute: parseInt(em, 10) });
+      setStartTime(initialStartTime || '08:00');
+      setEndTime(initialEndTime || '10:00');
       setEditingTarget('start');
     }
   }, [isOpen, initialStartTime, initialEndTime]);
 
   if (!isOpen) return null;
 
-  const currentClock = editingTarget === 'start' ? startClock : endClock;
-  
-  const updateCurrent = (updater) => {
+  const currentValue = editingTarget === 'start' ? startTime : endTime;
+  const handleTimeChange = (newValue) => {
     if (editingTarget === 'start') {
-      setStartClock(updater);
+      setStartTime(newValue);
     } else {
-      setEndClock(updater);
+      setEndTime(newValue);
     }
   };
 
-  const pad = n => n.toString().padStart(2, '0');
-
-  const handleHourUp = () => updateCurrent(prev => ({ ...prev, hour: (prev.hour + 1) % 24 }));
-  const handleHourDown = () => updateCurrent(prev => ({ ...prev, hour: (prev.hour - 1 + 24) % 24 }));
-  const handleMinuteUp = () => updateCurrent(prev => ({ ...prev, minute: (prev.minute + 15) % 60 }));
-  const handleMinuteDown = () => updateCurrent(prev => ({ ...prev, minute: (prev.minute - 15 + 60) % 60 }));
-
   const handleConfirm = () => {
-    onConfirm({
-      startTime: `${pad(startClock.hour)}:${pad(startClock.minute)}`,
-      endTime: `${pad(endClock.hour)}:${pad(endClock.minute)}`
-    });
+    onConfirm({ startTime, endTime });
     onClose();
   };
 
@@ -52,9 +174,9 @@ export function TimeRangeSelectionModal({ isOpen, onClose, initialStartTime = "0
         </div>
         
         {/* Modal Content */}
-        <div className="px-10 py-6 space-y-8">
+        <div className="px-10 py-6 space-y-6">
           
-          {/* Time Range Status Cards */}
+          {/* Start / End Toggle Cards */}
           <div className="grid grid-cols-2 gap-5">
             <button 
               onClick={() => setEditingTarget('start')}
@@ -62,7 +184,7 @@ export function TimeRangeSelectionModal({ isOpen, onClose, initialStartTime = "0
             >
               <span className="font-medium text-[18px] mb-1 tracking-wide">Bắt đầu</span>
               <span className={`text-[28px] font-extrabold tracking-tight ${editingTarget === 'start' ? 'text-[#1a73e8]' : 'text-[#727785]'}`}>
-                {pad(startClock.hour)}:{pad(startClock.minute)}
+                {startTime}
               </span>
             </button>
             <button 
@@ -71,39 +193,19 @@ export function TimeRangeSelectionModal({ isOpen, onClose, initialStartTime = "0
             >
               <span className="font-medium text-[18px] mb-1 tracking-wide">Kết thúc</span>
               <span className={`text-[28px] font-extrabold tracking-tight ${editingTarget === 'end' ? 'text-[#1a73e8]' : 'text-[#727785]'}`}>
-                {pad(endClock.hour)}:{pad(endClock.minute)}
+                {endTime}
               </span>
             </button>
           </div>
           
-          {/* Massive Time Picker Widget */}
-          <div className="bg-[#f3f4f5] rounded-[2rem] p-8 flex flex-col items-center border border-gray-100 shadow-sm mt-4">
-            <div className="flex items-center justify-center gap-8 w-full px-4">
-               
-               {/* Hour Column */}
-               <div className="flex flex-col items-center gap-4 flex-1">
-                 <span className="text-[20px] font-bold text-[#414754] uppercase tracking-widest">GIỜ</span>
-                 <div className="flex flex-col items-center w-full bg-white rounded-3xl py-6 border border-[#e0e3e8]" style={{ boxShadow: 'inset 0 4px 12px rgba(0,0,0,0.03)' }}>
-                   <button onClick={handleHourUp} className="material-symbols-outlined text-[#c1c6d6] text-[56px] hover:text-[#1a73e8] active:scale-90 transition-transform outline-none">expand_less</button>
-                   <span className="text-[76px] font-extrabold text-[#191c1d] leading-none py-1 select-none tracking-tighter">{pad(currentClock.hour)}</span>
-                   <button onClick={handleHourDown} className="material-symbols-outlined text-[#c1c6d6] text-[56px] hover:text-[#1a73e8] active:scale-90 transition-transform outline-none">expand_more</button>
-                 </div>
-               </div>
-               
-               {/* Separator */}
-               <div className="text-[64px] font-extrabold text-[#727785] pt-12 select-none px-2 mb-2">:</div>
-               
-               {/* Minute Column */}
-               <div className="flex flex-col items-center gap-4 flex-1">
-                 <span className="text-[20px] font-bold text-[#414754] uppercase tracking-widest">PHÚT</span>
-                 <div className="flex flex-col items-center w-full bg-white rounded-3xl py-6 border border-[#e0e3e8]" style={{ boxShadow: 'inset 0 4px 12px rgba(0,0,0,0.03)' }}>
-                   <button onClick={handleMinuteUp} className="material-symbols-outlined text-[#c1c6d6] text-[56px] hover:text-[#1a73e8] active:scale-90 transition-transform outline-none">expand_less</button>
-                   <span className="text-[76px] font-extrabold text-[#191c1d] leading-none py-1 select-none tracking-tighter">{pad(currentClock.minute)}</span>
-                   <button onClick={handleMinuteDown} className="material-symbols-outlined text-[#c1c6d6] text-[56px] hover:text-[#1a73e8] active:scale-90 transition-transform outline-none">expand_more</button>
-                 </div>
-               </div>
-               
-            </div>
+          {/* Scroll-based Time Picker */}
+          <div className="bg-[#f3f4f5] rounded-[2rem] p-6 border border-gray-100 shadow-sm">
+            {/* Key forces remount when switching start/end so scroll position resets */}
+            <ScrollTimePicker
+              key={editingTarget}
+              value={currentValue}
+              onChange={handleTimeChange}
+            />
           </div>
           
         </div>
