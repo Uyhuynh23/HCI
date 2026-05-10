@@ -277,165 +277,150 @@ export function AddScheduleModal({ isOpen, onClose, initialFieldId, initialDate 
 
   if (!isOpen) return null;
 
+  const SPORTS = [
+    { key: 'Bóng chuyền', color: '#ab3231', icon: '/volleyball-1-svgrepo-com.svg' },
+    { key: 'Cầu lông', color: '#006a6a', icon: '/badminton-3-svgrepo-com.svg' },
+    { key: 'Pickleball', color: '#1a73e8', icon: '/pickleball.png' },
+  ];
+
   return (
     <div className="fixed inset-0 bg-[#191c1d]/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 antialiased">
-      <div className="w-full max-w-lg bg-[#f8f9fa] border-none rounded-[1.5rem] shadow-[0_8px_24px_rgba(33,37,41,0.08)] overflow-visible flex flex-col max-h-[85vh] relative animate-in fade-in zoom-in duration-200">
+      <div className="w-full max-w-4xl bg-[#f8f9fa] border-none rounded-[1.5rem] shadow-[0_8px_24px_rgba(33,37,41,0.08)] overflow-visible flex flex-col relative animate-in fade-in zoom-in duration-200">
 
         {/* Header */}
-        <header className="px-8 pt-8 pb-6 flex justify-between items-start bg-[#f8f9fa] shrink-0 rounded-t-[1.5rem] z-10">
-          <h1 className="font-headline text-[32px] font-bold leading-tight tracking-tight text-[#191c1d] uppercase">
+        <header className="px-8 pt-6 pb-4 flex justify-between items-center bg-[#f8f9fa] shrink-0 rounded-t-[1.5rem] z-10">
+          <h1 className="font-headline text-[28px] font-bold leading-tight tracking-tight text-[#191c1d] uppercase">
             THÊM LỊCH MỚI
           </h1>
           <button
             onClick={onClose}
-            className="w-14 h-14 flex items-center justify-center rounded-full bg-[#e7e8e9] hover:bg-[#d1d5db] text-[#191c1d] active:scale-90 transition-all border-none"
+            className="w-12 h-12 flex items-center justify-center rounded-full bg-[#e7e8e9] hover:bg-[#d1d5db] text-[#191c1d] active:scale-90 transition-all border-none"
           >
-            <span className="material-symbols-outlined text-[32px]">close</span>
+            <span className="material-symbols-outlined text-[28px]">close</span>
           </button>
         </header>
 
-        {/* Body */}
-        <div className="px-8 pb-8 overflow-y-auto flex-grow space-y-8" style={{ WebkitOverflowScrolling: 'touch' }}>
+        {/* Two-Column Body */}
+        <div className="px-8 pb-6 grid grid-cols-2 gap-8">
 
-          {/* Select Date */}
-          <section className="space-y-4">
-            <h2 className="font-headline text-[24px] font-bold text-[#191c1d] uppercase block">CHỌN NGÀY</h2>
-            <button type="button" onClick={() => setIsDateSelectionModalOpen(true)} className="w-full h-20 bg-white border-b-2 border-[#e0e3e8] outline-none flex items-center px-6 gap-4 shadow-sm rounded-xl active:bg-[#f3f4f5] transition-colors text-left hover:border-[#c1c6d6]">
-              <span className="material-symbols-outlined text-[#1a73e8] text-[32px]">calendar_today</span>
-              <span className="font-body text-[18px] font-medium text-[#191c1d]">{dateDisplayString}</span>
-            </button>
-          </section>
+          {/* LEFT COLUMN — Date, Court, Sport */}
+          <div className="space-y-5">
 
-          {/* Select Zone */}
-          <section className="space-y-4">
-            <h2 className="font-headline text-[24px] font-bold text-[#191c1d] uppercase block">CHỌN SÂN</h2>
-            <div className="relative">
-              <select
-                value={selectedFieldId}
-                onChange={(e) => setSelectedFieldId(e.target.value)}
-                className="w-full h-20 bg-white border-b-2 border-[#e0e3e8] font-body text-[18px] font-medium text-[#191c1d] px-6 rounded-xl appearance-none shadow-sm hover:border-[#c1c6d6] focus:border-[#1a73e8] focus:ring-4 focus:ring-[#1a73e8]/10 outline-none cursor-pointer transition-all"
-              >
-                {fields.map((field) => (
-                  <option key={field.id} value={field.id}>{field.name}</option>
-                ))}
-              </select>
-              <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none">
-                <span className="material-symbols-outlined text-[#727785] text-[32px]">expand_more</span>
-              </div>
-            </div>
-          </section>
-
-          {/* Sports Selection */}
-          <section className="space-y-4">
-            <h2 className="font-headline text-[24px] font-bold text-[#191c1d] uppercase block">MÔN THỂ THAO</h2>
-            <div className="grid grid-cols-1 gap-4">
-
-              <button type="button" onClick={() => setSelectedSport('Bóng chuyền')} className={`group flex items-center p-6 bg-white rounded-xl shadow-sm relative overflow-hidden border-l-[12px] active:scale-[0.98] transition-all text-left outline-none ${selectedSport === 'Bóng chuyền' ? 'border-[#ab3231] ring-2 ring-[#ab3231]' : 'border-[#ab3231]'}`}>
-                <div className="w-14 h-14 rounded-full bg-[#ab3231]/10 flex items-center justify-center mr-6 shrink-0">
-                  <img src="/volleyball-1-svgrepo-com.svg" className="w-8 h-8 object-contain" alt="Volleyball" />
-                </div>
-                <div className="flex flex-col flex-1">
-                  <span className="font-headline text-[18px] font-bold text-[#191c1d]">Bóng chuyền</span>
-                  {selectedSport === 'Bóng chuyền' && (
-                    <span className="text-[#ab3231] font-bold text-[14px] uppercase mt-1 tracking-wide">Đã chọn</span>
-                  )}
-                </div>
-                {selectedSport === 'Bóng chuyền' && (
-                  <div className="ml-auto">
-                    <span className="material-symbols-outlined text-[#ab3231] text-[32px]">check_circle</span>
-                  </div>
-                )}
+            {/* Select Date */}
+            <section className="space-y-2">
+              <h2 className="font-headline text-[16px] font-bold text-[#727785] uppercase tracking-wider">CHỌN NGÀY</h2>
+              <button type="button" onClick={() => setIsDateSelectionModalOpen(true)} className="w-full h-14 bg-white border-b-2 border-[#e0e3e8] outline-none flex items-center px-5 gap-3 shadow-sm rounded-xl active:bg-[#f3f4f5] transition-colors text-left hover:border-[#c1c6d6]">
+                <span className="material-symbols-outlined text-[#1a73e8] text-[24px]">calendar_today</span>
+                <span className="font-body text-[16px] font-medium text-[#191c1d]">{dateDisplayString}</span>
               </button>
+            </section>
 
-              <button type="button" onClick={() => setSelectedSport('Cầu lông')} className={`group flex items-center p-6 bg-white rounded-xl shadow-sm relative overflow-hidden border-l-[12px] active:scale-[0.98] transition-all text-left outline-none ${selectedSport === 'Cầu lông' ? 'border-[#006a6a] ring-2 ring-[#006a6a]' : 'border-[#006a6a]'}`}>
-                <div className="w-14 h-14 rounded-full bg-[#006a6a]/10 flex items-center justify-center mr-6 shrink-0">
-                  <img src="/badminton-3-svgrepo-com.svg" className="w-8 h-8 object-contain" alt="Badminton" />
+            {/* Select Court */}
+            <section className="space-y-2">
+              <h2 className="font-headline text-[16px] font-bold text-[#727785] uppercase tracking-wider">CHỌN SÂN</h2>
+              <div className="relative">
+                <select
+                  value={selectedFieldId}
+                  onChange={(e) => setSelectedFieldId(e.target.value)}
+                  className="w-full h-14 bg-white border-b-2 border-[#e0e3e8] font-body text-[16px] font-medium text-[#191c1d] px-5 rounded-xl appearance-none shadow-sm hover:border-[#c1c6d6] focus:border-[#1a73e8] focus:ring-4 focus:ring-[#1a73e8]/10 outline-none cursor-pointer transition-all"
+                >
+                  {fields.map((field) => (
+                    <option key={field.id} value={field.id}>{field.name}</option>
+                  ))}
+                </select>
+                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <span className="material-symbols-outlined text-[#727785] text-[24px]">expand_more</span>
                 </div>
-                <div className="flex flex-col flex-1">
-                  <span className="font-headline text-[18px] font-bold text-[#191c1d]">Cầu lông</span>
-                  {selectedSport === 'Cầu lông' && (
-                    <span className="text-[#006a6a] font-bold text-[14px] uppercase mt-1 tracking-wide">Đã chọn</span>
-                  )}
-                </div>
-                {selectedSport === 'Cầu lông' && (
-                  <div className="ml-auto">
-                    <span className="material-symbols-outlined text-[#006a6a] text-[32px]">check_circle</span>
-                  </div>
-                )}
-              </button>
-
-              <button type="button" onClick={() => setSelectedSport('Pickleball')} className={`group flex items-center p-6 bg-white rounded-xl shadow-sm relative overflow-hidden border-l-[12px] active:scale-[0.98] transition-all text-left outline-none ${selectedSport === 'Pickleball' ? 'border-[#1a73e8] ring-2 ring-[#1a73e8]' : 'border-[#1a73e8]'}`}>
-                <div className="w-14 h-14 rounded-full bg-[#1A73E8]/10 flex items-center justify-center mr-6 shrink-0">
-                  <img src="/pickleball.png" className="w-8 h-8 object-contain" alt="Pickleball" />
-                </div>
-                <div className="flex flex-col flex-1">
-                  <span className="font-headline text-[18px] font-bold text-[#191c1d]">Pickleball</span>
-                  {selectedSport === 'Pickleball' && (
-                    <span className="text-[#1a73e8] font-bold text-[14px] uppercase mt-1 tracking-wide">Đã chọn</span>
-                  )}
-                </div>
-                {selectedSport === 'Pickleball' && (
-                  <div className="ml-auto">
-                    <span className="material-symbols-outlined text-[#1a73e8] text-[32px]">check_circle</span>
-                  </div>
-                )}
-              </button>
-
-            </div>
-          </section>
-
-          {/* Time Selection with Large UI */}
-          <section className="space-y-4">
-            <h2 className="font-headline text-[24px] font-bold text-[#191c1d] uppercase block">THỜI GIAN</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <LargeTimePicker label="BẮT ĐẦU" value={startTime} onChange={setStartTime} />
-              <LargeTimePicker label="KẾT THÚC" value={endTime} onChange={setEndTime} />
-            </div>
-          </section>
-
-          {/* Customer Info */}
-          <section className="space-y-4">
-            <h2 className="font-headline text-[24px] font-bold text-[#191c1d] uppercase block">THÔNG TIN KHÁCH HÀNG</h2>
-            <div className="space-y-4">
-              <div className="flex items-center bg-white border-b-2 border-[#e0e3e8] rounded-xl shadow-sm px-6 h-20 gap-4 hover:border-[#c1c6d6] focus-within:border-[#1a73e8] focus-within:ring-4 focus-within:ring-[#1a73e8]/10 transition-all">
-                <span className="material-symbols-outlined text-[#1a73e8] text-[28px]">person</span>
-                <input
-                  type="text"
-                  placeholder="Tên khách hàng (không bắt buộc)"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  maxLength={100}
-                  className="flex-1 bg-transparent border-none outline-none font-body text-[18px] font-medium text-[#191c1d] placeholder:text-[#a0a4b0]"
-                />
               </div>
-              <div className="flex items-center bg-white border-b-2 border-[#e0e3e8] rounded-xl shadow-sm px-6 h-20 gap-4 hover:border-[#c1c6d6] focus-within:border-[#1a73e8] focus-within:ring-4 focus-within:ring-[#1a73e8]/10 transition-all">
-                <span className="material-symbols-outlined text-[#1a73e8] text-[28px]">phone</span>
-                <input
-                  type="tel"
-                  placeholder="Số điện thoại (không bắt buộc)"
-                  value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                  className="flex-1 bg-transparent border-none outline-none font-body text-[18px] font-medium text-[#191c1d] placeholder:text-[#a0a4b0]"
-                />
+            </section>
+
+            {/* Sport Selection — Compact */}
+            <section className="space-y-2">
+              <h2 className="font-headline text-[16px] font-bold text-[#727785] uppercase tracking-wider">MÔN THỂ THAO</h2>
+              <div className="flex flex-col gap-2.5">
+                {SPORTS.map(({ key, color, icon }) => {
+                  const isActive = selectedSport === key;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setSelectedSport(key)}
+                      className={`flex items-center gap-4 px-5 py-3 bg-white rounded-xl shadow-sm border-l-[8px] active:scale-[0.98] transition-all text-left outline-none ${isActive ? `ring-2` : ''}`}
+                      style={{ borderLeftColor: color, ...(isActive ? { boxShadow: `0 0 0 2px ${color}` } : {}) }}
+                    >
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}15` }}>
+                        <img src={icon} className="w-6 h-6 object-contain" alt={key} />
+                      </div>
+                      <span className="font-headline text-[16px] font-bold text-[#191c1d] flex-1">{key}</span>
+                      {isActive && (
+                        <span className="material-symbols-outlined text-[24px]" style={{ color }}>check_circle</span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
-            </div>
-          </section>
+            </section>
+
+          </div>
+
+          {/* RIGHT COLUMN — Time Pickers + Customer Info */}
+          <div className="space-y-5">
+
+            {/* Time Selection */}
+            <section className="space-y-2">
+              <h2 className="font-headline text-[16px] font-bold text-[#727785] uppercase tracking-wider">THỜI GIAN</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <LargeTimePicker label="BẮT ĐẦU" value={startTime} onChange={setStartTime} />
+                <LargeTimePicker label="KẾT THÚC" value={endTime} onChange={setEndTime} />
+              </div>
+            </section>
+
+            {/* Customer Info */}
+            <section className="space-y-2">
+              <h2 className="font-headline text-[16px] font-bold text-[#727785] uppercase tracking-wider">KHÁCH HÀNG</h2>
+              <div className="space-y-2.5">
+                <div className="flex items-center bg-white border-b-2 border-[#e0e3e8] rounded-xl shadow-sm px-5 h-14 gap-3 hover:border-[#c1c6d6] focus-within:border-[#1a73e8] focus-within:ring-4 focus-within:ring-[#1a73e8]/10 transition-all">
+                  <span className="material-symbols-outlined text-[#1a73e8] text-[22px]">person</span>
+                  <input
+                    type="text"
+                    placeholder="Tên khách hàng (không bắt buộc)"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    maxLength={100}
+                    className="flex-1 bg-transparent border-none outline-none font-body text-[15px] font-medium text-[#191c1d] placeholder:text-[#a0a4b0]"
+                  />
+                </div>
+                <div className="flex items-center bg-white border-b-2 border-[#e0e3e8] rounded-xl shadow-sm px-5 h-14 gap-3 hover:border-[#c1c6d6] focus-within:border-[#1a73e8] focus-within:ring-4 focus-within:ring-[#1a73e8]/10 transition-all">
+                  <span className="material-symbols-outlined text-[#1a73e8] text-[22px]">phone</span>
+                  <input
+                    type="tel"
+                    placeholder="Số điện thoại (không bắt buộc)"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    className="flex-1 bg-transparent border-none outline-none font-body text-[15px] font-medium text-[#191c1d] placeholder:text-[#a0a4b0]"
+                  />
+                </div>
+              </div>
+            </section>
+
+          </div>
 
         </div>
 
-        {/* Footer */}
-        <footer className="p-8 bg-[#f3f4f5] border-t border-[#c1c6d6]/20 flex flex-col gap-4 relative z-0 shrink-0">
+        {/* Full-Width Footer — Actions */}
+        <footer className="px-8 pb-6 pt-4 border-t border-[#e0e3e8] flex gap-4">
           {validationError && (
-            <div className="flex items-center gap-3 bg-[#ffdad6] text-[#ba1a1a] px-5 py-3.5 rounded-xl text-[16px] font-medium">
-              <span className="material-symbols-outlined text-[20px]">error</span>
+            <div className="flex items-center gap-3 bg-[#ffdad6] text-[#ba1a1a] px-5 py-3 rounded-xl text-[14px] font-medium shrink-0">
+              <span className="material-symbols-outlined text-[18px]">error</span>
               {validationError}
             </div>
           )}
-          <button type="button" onClick={handleConfirm} className="w-full h-16 bg-gradient-to-b from-[#1A73E8] to-[#005BBF] hover:brightness-110 text-white font-headline text-[20px] font-bold rounded-xl shadow-[0px_8px_24px_rgba(33,37,41,0.08)] active:scale-95 transition-all uppercase tracking-wide border-none outline-none">
-            XÁC NHẬN
-          </button>
-          <button type="button" onClick={onClose} className="w-full h-16 bg-[#e7e8e9] hover:bg-[#d9dadb] text-[#191c1d] font-headline text-[20px] font-bold rounded-xl active:scale-95 transition-all uppercase tracking-wide border-none outline-none">
+          <div className="flex-1" />
+          <button type="button" onClick={onClose} className="px-10 h-14 bg-[#e7e8e9] hover:bg-[#d9dadb] text-[#191c1d] font-headline text-[18px] font-bold rounded-xl active:scale-95 transition-all uppercase tracking-wide border-none outline-none">
             HỦY
+          </button>
+          <button type="button" onClick={handleConfirm} className="px-10 h-14 bg-gradient-to-b from-[#1A73E8] to-[#005BBF] hover:brightness-110 text-white font-headline text-[18px] font-bold rounded-xl shadow-[0px_8px_24px_rgba(33,37,41,0.08)] active:scale-95 transition-all uppercase tracking-wide border-none outline-none">
+            XÁC NHẬN
           </button>
         </footer>
 
