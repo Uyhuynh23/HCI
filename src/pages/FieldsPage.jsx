@@ -6,9 +6,6 @@ import { DateSelectionModal } from '../components/DateSelectionModal';
 import { TimeRangeSelectionModal } from '../components/TimeRangeSelectionModal';
 import { format } from 'date-fns';
 import { getFieldStatus } from '../utils/statusUtils';
-import { useLongPress } from '../hooks/useLongPress';
-
-const LONG_PRESS_HINT_KEY = 'kinetic-grid-longpress-hint-shown';
 
 const SPORT_CONFIG = {
   Pickleball: { icon: '/pickleball.png', isImage: true, colorClass: 'primary', badgeBg: 'bg-primary/10', badgeText: 'text-primary', borderColor: 'border-primary', iconBg: 'bg-primary-fixed text-on-primary-fixed-variant' },
@@ -24,74 +21,18 @@ function CourtCard({ field, navigate }) {
   const iconBg = isIdle ? 'bg-surface-container text-outline' : config.iconBg;
   const iconName = isIdle ? 'sports_score' : config.icon;
 
-  const [showHint, setShowHint] = useState(false);
-
   const timeDisplay = field.status === 'active' && field.timeRemaining
     ? `${String(Math.floor(field.timeRemaining / 60)).padStart(2, '0')}:${String(field.timeRemaining % 60).padStart(2, '0')}`
     : '--:--';
 
-  const handleLongPress = useCallback(() => {
-    navigate(`/fields/${field.id}`);
-  }, [navigate, field.id]);
-
-  const { isPressed, handlers } = useLongPress(handleLongPress, { threshold: 400, moveCancel: 10 });
-
-  // Show one-time hint on first long-press attempt for active courts
-  const handlePointerDown = (e) => {
-    if (!isIdle) {
-      const hintShown = localStorage.getItem(LONG_PRESS_HINT_KEY);
-      if (!hintShown) {
-        setShowHint(true);
-        localStorage.setItem(LONG_PRESS_HINT_KEY, 'true');
-        setTimeout(() => setShowHint(false), 3000);
-      }
-      handlers.onPointerDown(e);
-    }
-  };
-
-  const handleClick = (e) => {
-    if (isIdle) {
-      navigate(`/fields/${field.id}`);
-    }
-    // Active courts: click does nothing — handled by long-press
-  };
-
-  const handleManageClick = (e) => {
-    e.stopPropagation();
+  const handleActionClick = () => {
     navigate(`/fields/${field.id}`);
   };
 
   return (
     <div
-      onClick={handleClick}
-      {...(!isIdle ? {
-        onPointerDown: handlePointerDown,
-        onPointerMove: handlers.onPointerMove,
-        onPointerUp: handlers.onPointerUp,
-        onPointerCancel: handlers.onPointerCancel,
-      } : {})}
-      className={`grid grid-cols-5 items-center bg-surface-container-lowest p-8 rounded-[1.5rem] editorial-shadow border-l-[6px] ${borderColor} transition-all hover:scale-[1.01] hover:bg-slate-50 cursor-pointer gap-4 group relative select-none`}
-      style={{ touchAction: isIdle ? 'auto' : 'pan-y' }}
+      className={`grid grid-cols-5 items-center bg-surface-container-lowest p-8 rounded-[1.5rem] editorial-shadow border-l-[6px] ${borderColor} transition-all hover:shadow-md gap-4 group relative`}
     >
-      {/* Long-press progress ring overlay */}
-      {!isIdle && isPressed && (
-        <div className="absolute inset-0 rounded-[1.5rem] pointer-events-none z-20 flex items-center justify-center bg-black/5">
-          <svg width="56" height="56" viewBox="0 0 56 56" className="animate-spin-progress">
-            <circle cx="28" cy="28" r="24" fill="none" stroke="currentColor" strokeWidth="4" className="text-primary/20" />
-            <circle cx="28" cy="28" r="24" fill="none" stroke="currentColor" strokeWidth="4" className="text-primary" strokeDasharray="150.8" strokeDashoffset="150.8" strokeLinecap="round"
-              style={{ animation: 'longpress-ring 400ms linear forwards' }}
-            />
-          </svg>
-        </div>
-      )}
-
-      {/* One-time hint snackbar */}
-      {showHint && (
-        <div className="absolute -top-14 left-1/2 -translate-x-1/2 bg-[#191c1d] text-white text-[14px] font-medium px-5 py-2.5 rounded-xl shadow-lg whitespace-nowrap z-30 animate-in fade-in slide-in-from-bottom-2 duration-200">
-          Nhấn giữ để mở chi tiết sân đang hoạt động
-        </div>
-      )}
-
       <div className="flex items-center gap-4">
         <div className={`w-14 h-14 ${iconBg} rounded-xl flex items-center justify-center transition-transform group-hover:scale-110`}>
           {isIdle || !config.isImage ? (
@@ -125,10 +66,10 @@ function CourtCard({ field, navigate }) {
       </div>
       <div className="text-right">
         <button
-          onClick={handleManageClick}
-          className="px-6 py-3 bg-surface-container text-on-surface action-style rounded-xl group-hover:bg-primary group-hover:text-on-primary group-hover:shadow-md active:scale-95 transition-all cursor-pointer border-none"
+          onClick={handleActionClick}
+          className="px-6 py-3 bg-surface-container text-on-surface action-style rounded-xl hover:bg-primary hover:text-on-primary hover:shadow-md active:scale-95 transition-all cursor-pointer border-none"
         >
-          Quản lý
+          {isIdle ? 'Đặt sân' : 'Quản lý'}
         </button>
       </div>
     </div>

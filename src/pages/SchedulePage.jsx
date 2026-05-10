@@ -331,7 +331,7 @@ export function SchedulePage() {
 
       {/* Gantt Chart Container */}
       <section className="flex-1 px-8 pb-8 flex flex-col min-h-0">
-        <div className={`bg-white rounded-2xl shadow-sm border border-gray-200 flex-1 flex flex-col relative ${isCondensed ? 'overflow-hidden' : 'overflow-x-auto overflow-y-auto max-h-[70vh]'}`}>
+        <div className={`bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col relative ${isCondensed ? 'overflow-hidden mb-auto' : 'flex-1 overflow-x-auto overflow-y-auto max-h-[70vh]'}`}>
           <div className={isCondensed ? '' : 'min-w-[1400px]'}>
             {/* Time Header - sticky at top so it doesn't scroll away */}
             <div className={`grid bg-[#e7e8e9] border-b border-[#d9dadb] sticky top-0 z-20`} style={{ gridTemplateColumns: `${isCondensed ? '80px' : '140px'} repeat(${activeTotalHours}, 1fr)` }}>
